@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Depress Doomer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar" style="background: rgba(239, 68, 68, 0.1);">
+        <a href="index.html" class="nav-brand" style="color: #fca5a5;">Depress Doomer (Admin)</a>
+        <div class="nav-controls">
+            <a href="index.html" class="btn btn-outline">Back to Site</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Admin Dashboard</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Here you can view the real identities tied to user posts (For safety/emergency reasons only).</p>
+
+        <div class="glass-panel" id="adminData">
+            <!-- Simulated Admin View Data -->
+            <table style="width: 100%; text-align: left; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--surface-border);">
+                        <th style="padding: 1rem;">Post Snippet</th>
+                        <th style="padding: 1rem;">Public Nickname</th>
+                        <th style="padding: 1rem; color: #fca5a5;">Real Name</th>
+                        <th style="padding: 1rem; color: #fca5a5;">Phone</th>
+                        <th style="padding: 1rem; color: #fca5a5;">Age</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--surface-border);">
+                        <td style="padding: 1rem;">"I feel like I'm constantly failing..."</td>
+                        <td style="padding: 1rem;">Anonymous_78</td>
+                        <td style="padding: 1rem;">Kasun Perera</td>
+                        <td style="padding: 1rem;">0771234567</td>
+                        <td style="padding: 1rem;">24</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 1rem;">"It's really hard to wake up today." (Chat)</td>
+                        <td style="padding: 1rem;">Anonymous_X</td>
+                        <td style="padding: 1rem;">Amali Fernando</td>
+                        <td style="padding: 1rem;">0719876543</td>
+                        <td style="padding: 1rem;">19</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
