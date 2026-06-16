@@ -127,7 +127,10 @@
     <script>
         // STRICT ADMIN AUTH GUARD & RBAC Check
         const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
-        if (!user || !user.adminRoles) {
+        // Fallback: If they log in before RBAC was added, they won't have adminRoles. Let mentalistwuwi pass.
+        const isSuperAdminEmail = user && user.email === 'mentalistwuwi@gmail.com';
+        
+        if (!user || (!user.adminRoles && !isSuperAdminEmail)) {
             alert("Unauthorized. Admin access only.");
             window.location.href = "index.html";
         } else {
@@ -135,7 +138,7 @@
             if (nameEl) nameEl.textContent = user.nickname;
             
             // Show Manage Admins tab only for super admin
-            if (user.adminRoles.isSuperAdmin) {
+            if (isSuperAdminEmail || (user.adminRoles && user.adminRoles.isSuperAdmin)) {
                 document.getElementById('manageAdminsTab').style.display = 'inline-block';
             }
         }

