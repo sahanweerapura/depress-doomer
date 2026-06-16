@@ -8,42 +8,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="bg-blob blob-1"></div>
-    <div class="bg-blob blob-2"></div>
-
-    <div class="container auth-container">
-        <div class="glass-panel">
-            <h2 style="text-align: center; margin-bottom: 1.5rem;" data-i18n="auth.signupTitle">Join Depress Doomer</h2>
+    <div class="auth-wrapper">
+        <div class="auth-box" style="max-width: 550px;">
+            <h2 style="font-size: 2rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-user-secret" style="color: var(--primary-color);"></i>
+                Depress Doomer
+            </h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;" data-i18n="auth.signupTitle">Join the Community</p>
             
-            <div class="alert-box">
+            <div class="alert-warning" style="margin-bottom: 2rem;">
                 <strong><i class="fa-solid fa-lock"></i> <span data-i18n="auth.privacyDisclaimerTitle">Privacy Guarantee:</span></strong><br>
-                <span data-i18n="auth.privacyDisclaimer">Your real identity (Name, Email, Phone, Age) is strictly collected to prevent spam and for internal identity verification. It will NEVER be shared publicly. You will post and chat completely anonymously using a Nickname.</span>
+                <span data-i18n="auth.privacyDisclaimer" style="font-size: 0.85rem; color: #e7e9ea; margin-top: 0.5rem; display: block;">Your real identity (Name, Email, Phone, Age) is strictly collected to prevent spam and for internal identity verification. It will NEVER be shared publicly. You will post and chat completely anonymously using a Nickname.</span>
             </div>
 
             <form id="signupForm">
-                <!-- Real Details (Hidden from public) -->
-                <div class="form-group">
-                    <label data-i18n="auth.realName">Real Full Name</label>
-                    <input type="text" class="form-control" id="realName" required>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="auth.age">Age</label>
-                    <input type="number" class="form-control" id="age" min="13" max="100" required>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="auth.phone">Contact Number</label>
-                    <input type="tel" class="form-control" id="phone" required>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="auth.email">Email Address</label>
-                    <input type="email" class="form-control" id="email" required>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label data-i18n="auth.realName">Real Full Name</label>
+                        <input type="text" class="form-control" id="realName" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="auth.email">Email Address</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="auth.phone">Contact Number</label>
+                        <input type="tel" class="form-control" id="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="auth.age">Age</label>
+                        <input type="number" class="form-control" id="age" min="13" max="100" required>
+                    </div>
                 </div>
 
-                <hr style="border: 0; border-top: 1px solid var(--surface-border); margin: 2rem 0;">
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
                 
-                <!-- Public Details -->
                 <div class="form-group">
-                    <label data-i18n="auth.nickname">Public Nickname (This is what others will see)</label>
+                    <label style="color: var(--primary-color);" data-i18n="auth.nickname">Public Nickname (What others see)</label>
                     <input type="text" class="form-control" id="nickname" required>
                 </div>
                 <div class="form-group">
@@ -51,11 +52,12 @@
                     <input type="password" class="form-control" id="password" required>
                 </div>
                 
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" data-i18n="auth.signupBtn">Create Anonymous Account</button>
+                <button type="submit" class="btn-block btn-primary-auth" style="background-color: var(--primary-color); color: white;" data-i18n="auth.signupBtn">Create Anonymous Account</button>
             </form>
 
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <p><span data-i18n="auth.haveAccount">Already have an account?</span> <a href="login.html" style="color: var(--primary-color);" data-i18n="nav.login">Login</a></p>
+            <div style="margin-top: 2rem; text-align: center; font-size: 0.95rem;">
+                <span style="color: var(--text-muted);" data-i18n="auth.haveAccount">Already have an account?</span> 
+                <a href="login.html" style="color: var(--primary-color); font-weight: 600;" data-i18n="auth.loginBtn">Login</a>
             </div>
         </div>
     </div>

@@ -3,94 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Chat - Depress Doomer</title>
+    <title>Chat - Depress Doomer</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 75vh;
-        }
-        .chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            background: rgba(0,0,0,0.2);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-        .message {
-            max-width: 80%;
-            padding: 0.8rem 1.2rem;
-            border-radius: 12px;
-            background: var(--surface-color);
-            align-self: flex-start;
-        }
-        .message.mine {
-            background: rgba(99, 102, 241, 0.2);
-            align-self: flex-end;
-            border: 1px solid rgba(99, 102, 241, 0.3);
-        }
-        .msg-author {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 0.3rem;
-        }
-        .chat-input-area {
-            display: flex;
-            gap: 1rem;
-        }
-    </style>
 </head>
 <body>
-    <div class="bg-blob blob-1"></div>
-    <div class="bg-blob blob-2"></div>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="avatar"><i class="fa-solid fa-user-secret"></i></div>
+        <div class="brand-logo" style="margin: 0; padding: 0;">Depress Doomer</div>
+    </header>
 
-    <nav class="navbar">
-        <a href="index.html" class="nav-brand">Depress Doomer</a>
-        <div class="nav-controls">
-            <a href="index.html" class="btn btn-outline" data-i18n="nav.feed">Back to Feed</a>
-            <select class="lang-switcher" id="langSwitcher">
-                <option value="en">English</option>
-                <option value="si">සිංහල</option>
-            </select>
-        </div>
-    </nav>
-
-    <div class="container">
-        <!-- CRITICAL CHAT WARNING -->
-        <div class="alert-box" style="text-align: center; font-size: 1.1rem; padding: 1.2rem; background: rgba(239, 68, 68, 0.2);">
-            <strong><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="chat.warning">WARNING: Please avoid sharing your personal information with anyone. Stay completely anonymous.</span></strong>
-        </div>
-
-        <div class="glass-panel chat-container">
-            <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-comments"></i> <span data-i18n="chat.title">General Anonymous Chat</span></h3>
-            
-            <div class="chat-messages" id="chatBox">
-                <!-- Example message -->
-                <div class="message">
-                    <div class="msg-author">Anonymous_X</div>
-                    <div>It's really hard to wake up today.</div>
-                </div>
-                <div class="message mine">
-                    <div class="msg-author">You</div>
-                    <div>I understand how you feel. Take it one step at a time.</div>
+    <div class="app-layout">
+        <!-- Left Sidebar (Desktop) -->
+        <aside class="sidebar-left">
+            <a href="index.html" class="brand-logo">Depress Doomer</a>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <i class="fa-solid fa-house"></i>
+                    <span data-i18n="nav.feed">Home</span>
+                </a>
+                <a href="chat.html" class="nav-item active">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span data-i18n="nav.liveChat">Live Chat</span>
+                </a>
+                <a href="#" class="nav-item" id="logoutBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span data-i18n="nav.logout">Logout</span>
+                </a>
+            </nav>
+            <div class="user-profile-btn">
+                <div class="avatar" id="currentUserAvatar"><i class="fa-solid fa-user-secret"></i></div>
+                <div class="user-info">
+                    <strong style="color: var(--text-main);" id="currentUserName">Anonymous</strong>
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">@hidden</span>
                 </div>
             </div>
+        </aside>
 
-            <form class="chat-input-area" id="chatForm">
-                <input type="text" class="form-control" id="chatMsg" placeholder="Type an anonymous message..." required>
-                <button type="submit" class="btn btn-primary" data-i18n="chat.send">Send <i class="fa-solid fa-paper-plane"></i></button>
-            </form>
-        </div>
+        <!-- Chat Area Center -->
+        <main class="main-feed" style="display: flex; flex-direction: column;">
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span data-i18n="chat.title">General Anonymous Chat</span>
+            </div>
+
+            <div class="alert-warning" style="margin: 1rem; text-align: center;">
+                <strong><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="chat.warning">WARNING: Please avoid sharing your personal information with anyone. Stay completely anonymous.</span></strong>
+            </div>
+
+            <div class="chat-container">
+                <div class="chat-messages" id="chatBox">
+                    <!-- Messages injected here via app.js -->
+                </div>
+
+                <form class="chat-input" id="chatForm">
+                    <input type="text" id="chatMsg" placeholder="Type a message..." required>
+                    <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </main>
+
+        <!-- Right Sidebar (Desktop) -->
+        <aside class="sidebar-right">
+            <div class="widget">
+                <div class="widget-title">Chat Rules</div>
+                <ul style="color: var(--text-muted); font-size: 0.9rem; padding-left: 1rem;">
+                    <li>No bullying or hate speech.</li>
+                    <li>Do not share real names or numbers.</li>
+                    <li>Be supportive.</li>
+                </ul>
+            </div>
+        </aside>
     </div>
 
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-nav">
+        <a href="index.html" class="mobile-nav-item"><i class="fa-solid fa-house"></i></a>
+        <a href="chat.html" class="mobile-nav-item active"><i class="fa-solid fa-envelope"></i></a>
+        <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
+    </nav>
+
+    <!-- App Logic -->
+    <script>
+        // AUTH GUARD
+        const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
+        if (!user) {
+            window.location.href = "login.html";
+        } else {
+            const nameEl = document.getElementById('currentUserName');
+            if (nameEl) nameEl.textContent = user.nickname;
+
+            // Admin Access
+            if (user.email === 'mentalistwuwi@gmail.com') {
+                const navLinks = document.querySelectorAll('.nav-links');
+                navLinks.forEach(nav => {
+                    const adminLink = document.createElement('a');
+                    adminLink.href = "admin.html";
+                    adminLink.className = "nav-item";
+                    adminLink.innerHTML = '<i class="fa-solid fa-user-shield"></i><span>Admin Panel</span>';
+                    nav.insertBefore(adminLink, nav.lastElementChild);
+                });
+                
+                const mobileNav = document.querySelector('.mobile-nav');
+                if (mobileNav) {
+                    const adminLinkMob = document.createElement('a');
+                    adminLinkMob.href = "admin.html";
+                    adminLinkMob.className = "mobile-nav-item";
+                    adminLinkMob.innerHTML = '<i class="fa-solid fa-user-shield"></i>';
+                    mobileNav.insertBefore(adminLinkMob, mobileNav.lastElementChild);
+                }
+            }
+        }
+    </script>
     <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/app.js"></script>
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        const doLogout = async () => {
+            await signOut(auth);
+            localStorage.removeItem('depressDoomerUser');
+            window.location.href = "login.html";
+        };
+        document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+        document.getElementById('logoutBtnMobile')?.addEventListener('click', doLogout);
+    </script>
 </body>
 </html>

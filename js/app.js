@@ -149,7 +149,7 @@ if (adminData) {
             let tableHTML = \`
             <table style="width: 100%; text-align: left; border-collapse: collapse;">
                 <thead>
-                    <tr style="border-bottom: 1px solid var(--surface-border);">
+                    <tr style="border-bottom: 1px solid var(--border-color);">
                         <th style="padding: 1rem;">Post Snippet</th>
                         <th style="padding: 1rem;">Public Nickname</th>
                         <th style="padding: 1rem; color: #fca5a5;">Real Name</th>
@@ -181,7 +181,7 @@ if (adminData) {
                 }
 
                 tableHTML += \`
-                    <tr style="border-bottom: 1px solid var(--surface-border);">
+                    <tr style="border-bottom: 1px solid var(--border-color);">
                         <td style="padding: 1rem;">\${escapeHTML(post.content.substring(0, 50))}...</td>
                         <td style="padding: 1rem;">\${escapeHTML(post.authorNickname)}</td>
                         <td style="padding: 1rem;">\${escapeHTML(realData.realName || 'N/A')}</td>
