@@ -12,33 +12,53 @@ import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/f
 const signupForm = document.getElementById('signupForm');
 const loginForm = document.getElementById('loginForm');
 const googleLoginBtn = document.getElementById('googleLoginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const loginBtn = document.getElementById('loginBtn');
+
+// Complete Profile Modal Elements
+const completeProfileModal = document.getElementById('completeProfileModal');
+const completeProfileForm = document.getElementById('completeProfileForm');
 
 let currentUserData = null;
+let pendingGoogleUser = null; // Temp hold user if profile is incomplete
 
 // Listen to Auth State
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Fetch user metadata from Firestore
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
+        if (docSnap.exists() && docSnap.data().phone !== "Pending") {
             currentUserData = docSnap.data();
+            
+            // Check if user is an admin
+            let adminRoles = null;
+            if (user.email === 'mentalistwuwi@gmail.com') {
+                adminRoles = { view_reports: true, view_identities: true, isSuperAdmin: true };
+            } else {
+                const adminDoc = await getDoc(doc(db, "admins", user.uid)); // Or email, let's use uid or email. Let's use email since it's easier to manually add.
+                const adminDocEmail = await getDoc(doc(db, "admins", user.email));
+                if (adminDocEmail.exists()) {
+                    adminRoles = adminDocEmail.data();
+                }
+            }
+
             localStorage.setItem('depressDoomerUser', JSON.stringify({
                 uid: user.uid,
                 email: user.email,
                 nickname: currentUserData.nickname,
-                avatar: "fa-user-secret"
+                avatar: "fa-user-secret",
+                adminRoles: adminRoles
             }));
+            
+            // If we are on login or signup page, redirect to home
+            if (window.location.pathname.includes('login.html') || window.location.pathname.includes('signup.html')) {
+                // Don't redirect if we are showing the complete profile modal
+                if (!completeProfileModal || completeProfileModal.style.display === 'none') {
+                    window.location.href = "index.html";
+                }
+            }
         }
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'inline-block';
     } else {
         currentUserData = null;
         localStorage.removeItem('depressDoomerUser');
-        if (loginBtn) loginBtn.style.display = 'inline-block';
-        if (logoutBtn) logoutBtn.style.display = 'none';
     }
 });
 
@@ -57,6 +77,7 @@ if (signupForm) {
             const email = document.getElementById('email').value;
             const nickname = document.getElementById('nickname').value;
             const password = document.getElementById('password').value;
+            const gender = document.getElementById('gender').value;
 
             // Create Auth User
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -67,12 +88,12 @@ if (signupForm) {
                 realName,
                 age,
                 phone,
+                gender,
                 email,
                 nickname,
                 createdAt: new Date().toISOString()
             });
 
-            alert("Account created successfully! Welcome to Depress Doomer.");
             window.location.href = "index.html";
         } catch (error) {
             console.error(error);
@@ -112,27 +133,25 @@ if (googleLoginBtn) {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
             
-            // Check if user exists in Firestore
+            // Check if user exists in Firestore and has completed profile
             const docRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(docRef);
             
-            if (!docSnap.exists()) {
-                // First time Google Login - we need them to provide Nickname, Age, Phone.
-                // For simplicity in this demo, we'll assign a random nickname and ask them to update later,
-                // but strictly speaking they should provide age and phone.
-                const randomNickname = "Anon_" + Math.floor(Math.random() * 10000);
-                await setDoc(doc(db, "users", user.uid), {
-                    realName: user.displayName || "Google User",
-                    email: user.email,
-                    nickname: randomNickname,
-                    phone: "Pending",
-                    age: "Pending",
-                    createdAt: new Date().toISOString()
-                });
-                alert("Please note: Your nickname is " + randomNickname + ". You can change this later.");
+            if (!docSnap.exists() || docSnap.data().phone === "Pending") {
+                // Profile is incomplete. Show modal.
+                pendingGoogleUser = user;
+                
+                // Pre-fill name and random nickname
+                document.getElementById('cpName').value = user.displayName || "";
+                document.getElementById('cpNickname').value = "Anon_" + Math.floor(Math.random() * 10000);
+                
+                // Hide login box, show modal
+                document.querySelector('.auth-wrapper').style.display = 'none';
+                completeProfileModal.classList.add('active');
+            } else {
+                // Profile is complete, redirect to home
+                window.location.href = "index.html";
             }
-            
-            window.location.href = "index.html";
         } catch (error) {
             console.error(error);
             alert("Error: " + error.message);
@@ -140,15 +159,46 @@ if (googleLoginBtn) {
     });
 }
 
-// Handle Logout
-if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
+// Handle Complete Profile Form (After Google Login)
+if (completeProfileForm) {
+    completeProfileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = completeProfileForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Saving...";
+
         try {
-            await signOut(auth);
-            window.location.href = "login.html";
+            const realName = document.getElementById('cpName').value;
+            const phone = document.getElementById('cpPhone').value;
+            const gender = document.getElementById('cpGender').value;
+            const age = document.getElementById('cpAge').value;
+            const nickname = document.getElementById('cpNickname').value;
+
+            // Save to Firestore
+            await setDoc(doc(db, "users", pendingGoogleUser.uid), {
+                realName: realName,
+                email: pendingGoogleUser.email,
+                nickname: nickname,
+                phone: phone,
+                gender: gender,
+                age: age,
+                createdAt: new Date().toISOString()
+            });
+
+            // Update localStorage manually since onAuthStateChanged already fired
+            localStorage.setItem('depressDoomerUser', JSON.stringify({
+                uid: pendingGoogleUser.uid,
+                email: pendingGoogleUser.email,
+                nickname: nickname,
+                avatar: "fa-user-secret"
+            }));
+
+            window.location.href = "index.html";
         } catch (error) {
             console.error(error);
-            alert("Error logging out.");
+            alert("Error: " + error.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Save & Continue";
         }
     });
 }

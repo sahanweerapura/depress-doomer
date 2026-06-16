@@ -8,11 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <div class="blob blob-primary"></div>
+    <div class="blob blob-accent"></div>
+
     <!-- Mobile Header -->
-    <header class="mobile-header">
-        <div class="avatar"><i class="fa-solid fa-user-secret"></i></div>
-        <div class="brand-logo" style="margin: 0; padding: 0;">Depress Doomer</div>
-        <select class="lang-select" id="langSwitcherMobile">
+    <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
+        <div class="brand-logo" style="margin: 0; font-size: 1.5rem;"><i class="fa-solid fa-moon"></i> Doomer</div>
+        <select class="form-control" id="langSwitcherMobile" style="width: auto; padding: 0.5rem; background: transparent;">
             <option value="en">EN</option>
             <option value="si">SI</option>
         </select>
@@ -20,15 +22,15 @@
 
     <div class="app-layout">
         <!-- Left Sidebar (Desktop) -->
-        <aside class="sidebar-left">
-            <a href="index.html" class="brand-logo">Depress Doomer</a>
+        <aside class="sidebar-left glass-panel">
+            <div class="brand-logo"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
             <nav class="nav-links">
                 <a href="index.html" class="nav-item active">
                     <i class="fa-solid fa-house"></i>
                     <span data-i18n="nav.feed">Home</span>
                 </a>
                 <a href="chat.html" class="nav-item">
-                    <i class="fa-solid fa-envelope"></i>
+                    <i class="fa-solid fa-message"></i>
                     <span data-i18n="nav.liveChat">Live Chat</span>
                 </a>
                 <a href="#" class="nav-item" id="logoutBtn">
@@ -36,59 +38,58 @@
                     <span data-i18n="nav.logout">Logout</span>
                 </a>
             </nav>
-            <button class="post-btn-sidebar" onclick="document.getElementById('postContent').focus()">
-                <span data-i18n="feed.postButton">Post</span>
-            </button>
 
             <div class="user-profile-btn">
-                <div class="avatar" id="currentUserAvatar"><i class="fa-solid fa-user-secret"></i></div>
-                <div class="user-info">
-                    <strong style="color: var(--text-main);" id="currentUserName">Anonymous</strong>
-                    <span style="color: var(--text-muted); font-size: 0.9rem;">@hidden</span>
+                <div class="avatar" id="currentUserAvatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                <div style="display: flex; flex-direction: column;">
+                    <strong id="currentUserName" style="font-size: 1rem;">Anonymous</strong>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Private User</span>
                 </div>
             </div>
         </aside>
 
         <!-- Main Feed Center -->
         <main class="main-feed">
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <span data-i18n="nav.feed">Home</span>
-                <select class="lang-select" id="langSwitcher">
-                    <option value="en">EN</option>
-                    <option value="si">SI</option>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -1rem;" class="desktop-only">
+                <h2 style="font-weight: 800; font-size: 1.8rem;" data-i18n="nav.feed">Home</h2>
+                <select class="form-control" id="langSwitcher" style="width: auto; padding: 0.5rem;">
+                    <option value="en">English</option>
+                    <option value="si">සිංහල</option>
                 </select>
             </div>
 
             <!-- Compose Post Box -->
-            <div class="compose-box">
-                <div class="avatar"><i class="fa-solid fa-user-secret"></i></div>
-                <div style="flex-grow: 1;">
-                    <form id="createPostForm">
-                        <textarea id="postContent" rows="2" placeholder="Share what's on your mind anonymously..." data-i18n-placeholder="feed.sharePrompt" required></textarea>
-                        <div class="compose-actions">
-                            <button type="submit" class="btn-post" data-i18n="feed.postButton">Post</button>
-                        </div>
-                    </form>
+            <div class="compose-box glass-panel">
+                <div style="display: flex; gap: 1rem;">
+                    <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                    <div style="flex-grow: 1;">
+                        <form id="createPostForm">
+                            <textarea id="postContent" class="compose-textarea" rows="3" placeholder="Share your struggles completely anonymously..." data-i18n-placeholder="feed.sharePrompt" required></textarea>
+                            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                                <button type="submit" class="btn-primary" data-i18n="feed.postButton">Share Anonymously</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 
             <!-- Feed Posts Container -->
-            <div id="postsContainer">
-                <!-- Posts will be injected here via app.js -->
+            <div id="postsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Posts injected via app.js -->
             </div>
         </main>
 
         <!-- Right Sidebar (Desktop) -->
         <aside class="sidebar-right">
-            <div class="widget">
-                <div class="widget-title" data-i18n="sidebar.about">About Us</div>
-                <p style="color: var(--text-muted); font-size: 0.9rem;" data-i18n="sidebar.description">
-                    Depress Doomer is a safe haven. Share your mental struggles anonymously and find people who understand.
+            <div class="widget glass-panel">
+                <h3 data-i18n="sidebar.about"><i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> About the Haven</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;" data-i18n="sidebar.description">
+                    This is a highly secure, completely anonymous space designed for those going through dark times. 
                 </p>
             </div>
-            <div class="widget" style="background-color: rgba(29, 155, 240, 0.1); border: 1px solid var(--primary-color);">
-                <div style="color: var(--primary-color); font-weight: 600; font-size: 0.9rem;">
-                    <i class="fa-solid fa-shield-halved"></i> <span data-i18n="sidebar.privacy">100% Anonymous public front.</span>
+            <div class="widget glass-panel" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+                <div style="color: var(--success); font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-shield-check"></i> <span data-i18n="sidebar.privacy">100% Identity Protected</span>
                 </div>
             </div>
         </aside>
@@ -97,42 +98,91 @@
     <!-- Mobile Bottom Navigation -->
     <nav class="mobile-nav">
         <a href="index.html" class="mobile-nav-item active"><i class="fa-solid fa-house"></i></a>
-        <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-envelope"></i></a>
+        <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
         <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
     </nav>
 
+    <!-- Global Report Modal -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal-content glass-panel">
+            <h2 style="color: var(--danger); margin-bottom: 1rem;"><i class="fa-solid fa-flag"></i> Report Content</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">This report will be sent directly to the Admin team for review. Your identity will remain hidden.</p>
+            <form id="reportForm">
+                <input type="hidden" id="reportTargetId">
+                <input type="hidden" id="reportTargetType">
+                <div class="form-group">
+                    <label>Reason for reporting</label>
+                    <select class="form-control" id="reportReason" required>
+                        <option value="Bullying or Harassment">Bullying or Harassment</option>
+                        <option value="Sharing Personal Information">Sharing Personal Information</option>
+                        <option value="Spam or Scam">Spam or Scam</option>
+                        <option value="Self-Harm Threats">Self-Harm Threats</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Additional Context (Optional)</label>
+                    <textarea class="form-control" id="reportContext" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn-primary" style="background: transparent; border: 1px solid var(--glass-border);" onclick="closeReportModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" style="background: var(--danger); box-shadow: 0 4px 15px rgba(239,68,68,0.3);">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- App Logic -->
     <script>
-        // AUTH GUARD: MUST BE LOGGED IN TO SEE ANYTHING
+        // AUTH GUARD & RBAC UI
         const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
         if (!user) {
             window.location.href = "login.html";
         } else {
-            // Setup Profile Display
             const nameEl = document.getElementById('currentUserName');
             if (nameEl) nameEl.textContent = user.nickname;
 
-            // Admin Access
+            // Simple check for Super Admin to show panel button immediately
+            // Sub-admins will be checked fully in app.js, but super admin gets guaranteed UI fast.
             if (user.email === 'mentalistwuwi@gmail.com') {
+                injectAdminLink();
+            } else {
+                // We'll leave it to app.js to inject it if they are a sub-admin
+            }
+
+            function injectAdminLink() {
                 const navLinks = document.querySelectorAll('.nav-links');
                 navLinks.forEach(nav => {
-                    const adminLink = document.createElement('a');
-                    adminLink.href = "admin.html";
-                    adminLink.className = "nav-item";
-                    adminLink.innerHTML = '<i class="fa-solid fa-user-shield"></i><span>Admin Panel</span>';
-                    nav.insertBefore(adminLink, nav.lastElementChild);
+                    if (!nav.querySelector('.admin-link')) {
+                        const adminLink = document.createElement('a');
+                        adminLink.href = "admin.html";
+                        adminLink.className = "nav-item admin-link";
+                        adminLink.innerHTML = '<i class="fa-solid fa-user-shield"></i><span>Dashboard</span>';
+                        nav.insertBefore(adminLink, nav.lastElementChild);
+                    }
                 });
-                
                 const mobileNav = document.querySelector('.mobile-nav');
-                if (mobileNav) {
+                if (mobileNav && !mobileNav.querySelector('.admin-link')) {
                     const adminLinkMob = document.createElement('a');
                     adminLinkMob.href = "admin.html";
-                    adminLinkMob.className = "mobile-nav-item";
+                    adminLinkMob.className = "mobile-nav-item admin-link";
                     adminLinkMob.innerHTML = '<i class="fa-solid fa-user-shield"></i>';
                     mobileNav.insertBefore(adminLinkMob, mobileNav.lastElementChild);
                 }
             }
+            window.injectAdminLink = injectAdminLink; // Expose for app.js
         }
+    </script>
+    <script>
+        // Modal functions
+        function openReportModal(targetId, targetType) {
+            document.getElementById('reportTargetId').value = targetId;
+            document.getElementById('reportTargetType').value = targetType;
+            document.getElementById('reportModal').classList.add('active');
+        }
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+        window.openReportModal = openReportModal;
     </script>
     <script type="module" src="js/i18n.js"></script>
     <script type="module" src="js/app.js"></script>
