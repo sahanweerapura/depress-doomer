@@ -5,7 +5,6 @@ import {
     where, getCountFromServer 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Utility to get current user from local storage
 function getCurrentUser() {
     const u = JSON.parse(localStorage.getItem('depressDoomerUser'));
     if (u && u.email === 'mentalistwuwi@gmail.com' && !u.adminRoles) {
@@ -17,7 +16,6 @@ function getCurrentUser() {
 const user = getCurrentUser();
 const isAdmin = user && user.adminRoles;
 
-// Simple HTML escaper
 function escapeHTML(str) {
     if (!str) return '';
     return str.toString()
@@ -34,9 +32,7 @@ if (user && user.adminRoles) {
     }
 }
 
-// ----------------------------------------------------
 // TOTAL USER COUNTER
-// ----------------------------------------------------
 const totalUserCountEl = document.getElementById('totalUserCount');
 if (totalUserCountEl) {
     async function fetchUserCount() {
@@ -50,9 +46,7 @@ if (totalUserCountEl) {
     fetchUserCount();
 }
 
-// ----------------------------------------------------
 // NOTIFICATION SYSTEM LOGIC
-// ----------------------------------------------------
 const notifBadge = document.getElementById('notifBadge');
 if (user && notifBadge) {
     const qNotif = query(collection(db, "notifications"), where("recipientUid", "==", user.uid));
@@ -98,9 +92,13 @@ window.openNotifications = async () => {
         notifs.forEach(n => {
             const bg = n.read ? 'transparent' : 'rgba(99, 102, 241, 0.1)';
             const border = n.read ? 'var(--glass-border)' : 'var(--primary)';
+            
+            // Differentiate message based on tag vs normal reply
+            const actionText = n.type === 'mention' ? 'mentioned you in a comment:' : 'commented on your post:';
+
             notifList.innerHTML += `
                 <div style="padding: 1rem; background: ${bg}; border-left: 3px solid ${border}; border-radius: 4px; margin-bottom: 0.5rem;">
-                    <strong style="color: var(--primary);">${escapeHTML(n.senderNickname)}</strong> commented on your post: 
+                    <strong style="color: var(--primary);">${escapeHTML(n.senderNickname)}</strong> ${actionText}
                     <br><span style="color: var(--text-muted); font-size: 0.9rem;">"${escapeHTML(n.replySnippet)}"</span>
                 </div>
             `;
@@ -117,9 +115,7 @@ window.closeNotifications = () => {
     document.getElementById('notifModal').classList.remove('active');
 };
 
-// ----------------------------------------------------
-// FEED LOGIC WITH REPLY SYSTEM
-// ----------------------------------------------------
+// FEED LOGIC WITH REPLY SYSTEM & MENTIONS
 const createPostForm = document.getElementById('createPostForm');
 const postsContainer = document.getElementById('postsContainer');
 
@@ -144,19 +140,24 @@ if (createPostForm && postsContainer) {
             const isMyPost = user && post.authorUid === user.uid;
             const canDeletePost = isMyPost || isAdmin;
 
-            // Render Replies
+            // Render Replies with Mention Highlighting
             const replies = post.replies || [];
             let repliesHtml = '';
             if (replies.length > 0) {
                 replies.forEach(reply => {
                     let replyTime = new Date(reply.createdAt).toLocaleString();
+                    
+                    // Highlight @Mentions in the UI
+                    let safeReplyContent = escapeHTML(reply.content);
+                    safeReplyContent = safeReplyContent.replace(/@([a-zA-Z0-9_]+)/g, '<strong style="color: var(--accent);">@$1</strong>');
+
                     repliesHtml += `
                         <div class="reply" style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid var(--primary);">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <strong style="color: var(--primary); font-size: 0.85rem;"><i class="fa-solid fa-reply fa-xs"></i> ${escapeHTML(reply.authorNickname)}</strong>
                                 <span style="font-size: 0.75rem; color: var(--text-muted);">${replyTime}</span>
                             </div>
-                            <p style="font-size: 0.9rem; margin-top: 0.3rem; color: #e7e9ea;">${escapeHTML(reply.content)}</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.3rem; color: #e7e9ea;">${safeReplyContent}</p>
                         </div>
                     `;
                 });
@@ -196,7 +197,7 @@ if (createPostForm && postsContainer) {
                         ${repliesHtml}
                     </div>
                     <form onsubmit="window.submitReply(event, '${postId}', '${post.authorUid}')" style="display: flex; gap: 0.5rem;">
-                        <input type="text" id="reply-input-${postId}" placeholder="Write an encouraging reply..." style="flex-grow: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white;" required>
+                        <input type="text" id="reply-input-${postId}" placeholder="Write a reply (use @Nickname to tag)..." style="flex-grow: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white;" required>
                         <button type="submit" class="btn-primary" style="padding: 0 1.2rem; border-radius: 8px;"><i class="fa-solid fa-paper-plane"></i></button>
                     </form>
                 </div>
@@ -257,6 +258,23 @@ if (createPostForm && postsContainer) {
         submitBtn.disabled = true;
 
         try {
+            // Find any @mentions in the text
+            const mentions = replyContent.match(/@([a-zA-Z0-9_]+)/g);
+            let mentionedUids = [];
+
+            if (mentions) {
+                for (const mention of mentions) {
+                    const nick = mention.substring(1); // Remove the @ symbol
+                    // Query the database to find the user with this nickname
+                    const userQ = query(collection(db, "users"), where("nickname", "==", nick));
+                    const userSnap = await getDocs(userQ);
+                    if (!userSnap.empty) {
+                        mentionedUids.push(userSnap.docs[0].id); // Save the matching user's UID
+                    }
+                }
+            }
+
+            // Save the reply to the post
             await updateDoc(doc(db, "posts", postId), {
                 replies: arrayUnion({
                     content: replyContent,
@@ -267,16 +285,34 @@ if (createPostForm && postsContainer) {
             });
             inputField.value = '';
 
-            // Notify the post author
+            // 1. Notify the original post author (if it's not the person commenting)
             if (postAuthorUid !== user.uid) {
                 await addDoc(collection(db, "notifications"), {
                     recipientUid: postAuthorUid,
                     senderNickname: user.nickname,
                     replySnippet: replyContent.substring(0, 40) + '...',
                     postId: postId,
+                    type: 'comment',
                     read: false,
                     createdAt: serverTimestamp()
                 });
+            }
+
+            // 2. Notify anyone who was explicitly @mentioned
+            for (const mUid of mentionedUids) {
+                // Prevent sending them 2 notifications if they are also the post owner
+                // Also prevent sending a notification to yourself if you mention yourself
+                if (mUid !== user.uid && mUid !== postAuthorUid) {
+                    await addDoc(collection(db, "notifications"), {
+                        recipientUid: mUid,
+                        senderNickname: user.nickname,
+                        replySnippet: replyContent.substring(0, 40) + '...',
+                        postId: postId,
+                        type: 'mention',
+                        read: false,
+                        createdAt: serverTimestamp()
+                    });
+                }
             }
 
         } catch (error) {
@@ -288,9 +324,7 @@ if (createPostForm && postsContainer) {
     };
 }
 
-// ----------------------------------------------------
 // CHAT LOGIC
-// ----------------------------------------------------
 const chatForm = document.getElementById('chatForm');
 const chatBox = document.getElementById('chatBox');
 
@@ -347,9 +381,7 @@ if (chatForm && chatBox) {
     };
 }
 
-// ----------------------------------------------------
 // REPORT MODAL LOGIC
-// ----------------------------------------------------
 const reportForm = document.getElementById('reportForm');
 if (reportForm) {
     reportForm.addEventListener('submit', async (e) => {
@@ -372,9 +404,7 @@ if (reportForm) {
     });
 }
 
-// ----------------------------------------------------
 // ADMIN DASHBOARD LOGIC
-// ----------------------------------------------------
 const adminData = document.getElementById('adminData');
 if (adminData) {
     if (!user || !user.adminRoles) {
