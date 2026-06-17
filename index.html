@@ -58,11 +58,13 @@
                         <form id="createPostForm">
                             <textarea id="postContent" class="compose-textarea" rows="3" placeholder="Share your struggles completely anonymously..." data-i18n-placeholder="feed.sharePrompt" required></textarea>
                             
-                            <!-- NEW: The Void Toggle -->
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 1rem;">
-                                <label style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
-                                    <input type="checkbox" id="isVoidPost" style="accent-color: #4b5563; width: 16px; height: 16px;"> 
-                                    <span>🕳️ Send to The Void <br><small style="font-size: 0.7rem; color: #6b7280;">(Disables replies, auto-deletes in 24h)</small></span>
+                                <label style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                    <input type="checkbox" id="isVoidPost" style="accent-color: #4b5563; width: 16px; height: 16px; margin-top: 3px;"> 
+                                    <span>
+                                        <span data-i18n="feed.voidText">🕳️ Send to The Void</span> <i class="fa-solid fa-circle-info" style="color: var(--primary); margin-left: 5px;"></i><br>
+                                        <small style="font-size: 0.7rem; color: #6b7280;" data-i18n="feed.voidTooltip">(Disables replies, hides from public after 24h)</small>
+                                    </span>
                                 </label>
                                 <button type="submit" class="btn-primary" data-i18n="feed.postButton">Share Anonymously</button>
                             </div>
@@ -142,18 +144,18 @@
         </div>
     </div>
 
-    <!-- NEW: Daily Mood Check-in Modal -->
+    <!-- MOOD CHECK-IN MODAL (TRANSLATED) -->
     <div class="modal-overlay" id="moodModal">
         <div class="modal-content glass-panel" style="text-align: center; max-width: 450px;">
-            <h2 style="color: white; margin-bottom: 0.5rem;">How heavy is the cloud today? ☁️</h2>
-            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Checking in with yourself is the first step. Be honest, no one else sees this.</p>
+            <h2 style="color: white; margin-bottom: 0.5rem;" data-i18n="mood.title">How heavy is the cloud today? ☁️</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;" data-i18n="mood.desc">Checking in with yourself is the first step. Be honest, no one else sees this.</p>
             
             <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-                <button class="btn-primary" style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: white;" onclick="window.logMood(1)">1 - Light & Clear</button>
-                <button class="btn-primary" style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: white;" onclick="window.logMood(2)">2 - Manageable</button>
-                <button class="btn-primary" style="background: rgba(99, 102, 241, 0.3); border: 1px solid var(--primary); color: white;" onclick="window.logMood(3)">3 - A bit heavy</button>
-                <button class="btn-primary" style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: white;" onclick="window.logMood(4)">4 - Very dark</button>
-                <button class="btn-primary" style="background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: white;" onclick="window.logMood(5)">5 - Complete Storm</button>
+                <button class="btn-primary" style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: white;" onclick="window.logMood(1)" data-i18n="mood.btn1">1 - Light & Clear</button>
+                <button class="btn-primary" style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: white;" onclick="window.logMood(2)" data-i18n="mood.btn2">2 - Manageable</button>
+                <button class="btn-primary" style="background: rgba(99, 102, 241, 0.3); border: 1px solid var(--primary); color: white;" onclick="window.logMood(3)" data-i18n="mood.btn3">3 - A bit heavy</button>
+                <button class="btn-primary" style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: white;" onclick="window.logMood(4)" data-i18n="mood.btn4">4 - Very dark</button>
+                <button class="btn-primary" style="background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: white;" onclick="window.logMood(5)" data-i18n="mood.btn5">5 - Complete Storm</button>
             </div>
         </div>
     </div>
