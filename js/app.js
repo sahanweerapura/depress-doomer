@@ -1,7 +1,7 @@
 import { db } from './firebase-config.js';
 import { 
     collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, 
-    doc, updateDoc, increment, arrayUnion, arrayRemove, getDoc, setDoc, deleteDoc
+    doc, updateDoc, increment, arrayUnion, arrayRemove, getDoc, getDocs, setDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Utility to get current user from local storage
@@ -224,7 +224,7 @@ if (adminData) {
         adminData.innerHTML = "<p>Unauthorized.</p>";
     } else {
         window.loadAdminTab = async (tabName) => {
-            adminData.innerHTML = '<div style="padding: 2rem; text-align: center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
+            adminData.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top: 1rem;">Fetching Secure Data...</p></div>';
             
             if (tabName === 'identities') {
                 if (!user.adminRoles.view_identities) {
@@ -233,7 +233,6 @@ if (adminData) {
                 }
                 // Fetch Identities
                 try {
-                    const { getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
                     const postsSnapshot = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
                     
                     let html = \`<table class="admin-table">
@@ -269,7 +268,6 @@ if (adminData) {
                 }
                 // Fetch Reports
                 try {
-                    const { getDocs } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
                     const repSnap = await getDocs(query(collection(db, "reports"), orderBy("createdAt", "desc")));
                     
                     let html = \`<table class="admin-table">
