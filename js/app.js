@@ -46,14 +46,12 @@ async function handleMentionInput(inputElement, suggestionBoxElement) {
     const cursorPosition = inputElement.selectionStart;
     const textBeforeCursor = val.substring(0, cursorPosition);
     
-    // Check if typing an @mention right before the cursor
     const match = textBeforeCursor.match(/@([a-zA-Z0-9_]+)$/);
     
     if (match) {
         const searchTerm = match[1];
         clearTimeout(mentionTimeout);
         
-        // Wait 300ms before searching database to save reads
         mentionTimeout = setTimeout(async () => {
             try {
                 const usersRef = collection(db, "users");
@@ -76,7 +74,7 @@ async function handleMentionInput(inputElement, suggestionBoxElement) {
                         div.innerHTML = `<i class="fa-solid ${avatar}" style="color:var(--primary);"></i> ${nick}`;
                         
                         div.onmousedown = (e) => {
-                            e.preventDefault(); // Stop keyboard from hiding
+                            e.preventDefault();
                             const before = val.substring(0, match.index);
                             const after = val.substring(cursorPosition);
                             inputElement.value = before + "@" + nick + " " + after;
@@ -94,7 +92,6 @@ async function handleMentionInput(inputElement, suggestionBoxElement) {
         suggestionBoxElement.style.display = 'none';
     }
 }
-
 
 // ----------------------------------------------------
 // NOTIFICATIONS & USER COUNTER
@@ -156,6 +153,26 @@ window.openNotifications = async () => {
 
 window.closeNotifications = () => document.getElementById('notifModal').classList.remove('active');
 
+// ----------------------------------------------------
+// CRISIS INTERVENTION BOT LOGIC
+// ----------------------------------------------------
+// These words will trigger the automated bot response
+const crisisKeywords = [
+    "suicide", "kill myself", "end it", "want to die", 
+    "give up", "no reason to live", "ending it all", "end my life"
+];
+
+function checkForCrisis(text) {
+    const lowerText = text.toLowerCase();
+    return crisisKeywords.some(keyword => lowerText.includes(keyword));
+}
+
+const crisisBotReply = {
+    content: "You are not alone. Please, if you are feeling overwhelmed and considering ending things, reach out for help right now. In Sri Lanka, you can call 1333 for free, confidential, 24/7 crisis support. We care about you and we want you here.",
+    authorUid: "system_bot",
+    authorNickname: "Haven Support Bot 🛡️",
+    createdAt: new Date().toISOString()
+};
 
 // ----------------------------------------------------
 // FEED LOGIC
@@ -165,7 +182,6 @@ const postsContainer = document.getElementById('postsContainer');
 
 if (createPostForm && postsContainer) {
     
-    // Disable inputs if Read Only
     if (isReadOnly) {
         document.getElementById('postContent').disabled = true;
         document.getElementById('postContent').placeholder = "Your account is restricted. You can read, but cannot post.";
@@ -191,10 +207,17 @@ if (createPostForm && postsContainer) {
             let repliesHtml = '';
             replies.forEach(reply => {
                 let safeContent = escapeHTML(reply.content).replace(/@([a-zA-Z0-9_]+)/g, '<strong style="color: var(--accent);">@$1</strong>');
+                
+                // Style the bot reply differently so it stands out
+                let isBot = reply.authorUid === "system_bot";
+                let replyBg = isBot ? "rgba(239, 68, 68, 0.1)" : "rgba(255,255,255,0.03)";
+                let replyBorder = isBot ? "3px solid var(--danger)" : "3px solid var(--primary)";
+                let authorColor = isBot ? "var(--danger)" : "var(--primary)";
+
                 repliesHtml += `
-                    <div class="reply" style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid var(--primary);">
+                    <div class="reply" style="margin-top: 0.8rem; padding: 0.8rem; background: ${replyBg}; border-radius: 8px; border-left: ${replyBorder};">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <strong style="color: var(--primary); font-size: 0.85rem;"><i class="fa-solid fa-reply fa-xs"></i> ${escapeHTML(reply.authorNickname)}</strong>
+                            <strong style="color: ${authorColor}; font-size: 0.85rem;"><i class="fa-solid fa-reply fa-xs"></i> ${escapeHTML(reply.authorNickname)}</strong>
                         </div>
                         <p style="font-size: 0.9rem; margin-top: 0.3rem; color: #e7e9ea;">${safeContent}</p>
                     </div>
@@ -235,7 +258,6 @@ if (createPostForm && postsContainer) {
             `;
             postsContainer.appendChild(newPost);
 
-            // BIND THE POPUP LOGIC TO THIS NEW POST
             if (!isReadOnly) {
                 const replyInp = document.getElementById(`reply-input-${postId}`);
                 const suggBox = document.getElementById(`sugg-${postId}`);
@@ -252,13 +274,25 @@ if (createPostForm && postsContainer) {
         if (isReadOnly) return alert("You are banned from posting.");
         const submitBtn = createPostForm.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
+        
+        const content = document.getElementById('postContent').value;
+        
+        // --- CRISIS BOT CHECK ---
+        let initialReplies = [];
+        if (checkForCrisis(content)) {
+            initialReplies.push(crisisBotReply);
+        }
+        
         try {
             await addDoc(collection(db, "posts"), {
-                content: document.getElementById('postContent').value,
+                content: content,
                 authorUid: user.uid,
                 authorNickname: user.nickname,
                 authorAvatar: user.avatar,
-                likes: 0, likedBy: [], replies: [], createdAt: serverTimestamp()
+                likes: 0, 
+                likedBy: [], 
+                replies: initialReplies, // Will contain the bot reply if triggered
+                createdAt: serverTimestamp()
             });
             document.getElementById('postContent').value = '';
         } catch (error) { alert("Failed to post."); } 
@@ -326,7 +360,6 @@ if (chatForm && chatBox) {
         document.getElementById('chatMsg').placeholder = "Restricted from chatting.";
         chatForm.querySelector('button').disabled = true;
     } else {
-        // BIND POPUP LOGIC TO CHAT INPUT
         const msgInput = document.getElementById('chatMsg');
         msgInput.setAttribute('autocomplete', 'off');
         
@@ -356,7 +389,6 @@ if (chatForm && chatBox) {
             const msgId = docSnap.id;
             const isMine = user && msg.authorUid === user.uid;
             
-            // Highlight Mentions in Chat Too!
             let safeContent = escapeHTML(msg.content).replace(/@([a-zA-Z0-9_]+)/g, '<strong style="color: var(--accent);">@$1</strong>');
 
             const newMsg = document.createElement('div');
