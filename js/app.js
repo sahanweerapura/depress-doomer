@@ -27,6 +27,35 @@ if (user && user.adminRoles) {
 }
 
 // ----------------------------------------------------
+// DAILY MOOD CHECK-IN LOGIC
+// ----------------------------------------------------
+if (user && !isReadOnly && window.location.pathname.includes('index.html')) {
+    const todayStr = new Date().toDateString();
+    getDoc(doc(db, "users", user.uid)).then(docSnap => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.lastMoodLog !== todayStr) {
+                document.getElementById('moodModal').classList.add('active');
+            }
+        }
+    });
+
+    window.logMood = async (level) => {
+        try {
+            const todayStr = new Date().toDateString();
+            await updateDoc(doc(db, "users", user.uid), {
+                lastMoodLog: todayStr,
+                [`moodHistory.${Date.now()}`]: level
+            });
+            document.getElementById('moodModal').classList.remove('active');
+        } catch (error) {
+            console.error("Failed to log mood:", error);
+            document.getElementById('moodModal').classList.remove('active');
+        }
+    };
+}
+
+// ----------------------------------------------------
 // MENTION AUTO-SUGGEST POPUP LOGIC
 // ----------------------------------------------------
 const mentionStyle = document.createElement('style');
@@ -45,34 +74,25 @@ async function handleMentionInput(inputElement, suggestionBoxElement) {
     const val = inputElement.value;
     const cursorPosition = inputElement.selectionStart;
     const textBeforeCursor = val.substring(0, cursorPosition);
-    
     const match = textBeforeCursor.match(/@([a-zA-Z0-9_]+)$/);
     
     if (match) {
         const searchTerm = match[1];
         clearTimeout(mentionTimeout);
-        
         mentionTimeout = setTimeout(async () => {
             try {
                 const usersRef = collection(db, "users");
-                const q = query(usersRef, 
-                    where("nickname", ">=", searchTerm), 
-                    where("nickname", "<=", searchTerm + '\uf8ff')
-                );
-                
+                const q = query(usersRef, where("nickname", ">=", searchTerm), where("nickname", "<=", searchTerm + '\uf8ff'));
                 const snap = await getDocs(q);
                 suggestionBoxElement.innerHTML = '';
-                
                 if (!snap.empty) {
                     suggestionBoxElement.style.display = 'block';
                     snap.forEach(docSnap => {
                         const nick = docSnap.data().nickname;
                         const avatar = docSnap.data().gender === 'Female' ? 'fa-person-dress' : (docSnap.data().gender === 'Male' ? 'fa-person' : 'fa-user-astronaut');
-                        
                         const div = document.createElement('div');
                         div.className = 'mention-item';
                         div.innerHTML = `<i class="fa-solid ${avatar}" style="color:var(--primary);"></i> ${nick}`;
-                        
                         div.onmousedown = (e) => {
                             e.preventDefault();
                             const before = val.substring(0, match.index);
@@ -83,14 +103,10 @@ async function handleMentionInput(inputElement, suggestionBoxElement) {
                         };
                         suggestionBoxElement.appendChild(div);
                     });
-                } else {
-                    suggestionBoxElement.style.display = 'none';
-                }
+                } else { suggestionBoxElement.style.display = 'none'; }
             } catch(e) { console.error(e); }
         }, 300);
-    } else {
-        suggestionBoxElement.style.display = 'none';
-    }
+    } else { suggestionBoxElement.style.display = 'none'; }
 }
 
 // ----------------------------------------------------
@@ -153,25 +169,12 @@ window.openNotifications = async () => {
 
 window.closeNotifications = () => document.getElementById('notifModal').classList.remove('active');
 
-// ----------------------------------------------------
 // CRISIS INTERVENTION BOT LOGIC
-// ----------------------------------------------------
-// These words will trigger the automated bot response
-const crisisKeywords = [
-    "suicide", "kill myself", "end it", "want to die", 
-    "give up", "no reason to live", "ending it all", "end my life"
-];
-
-function checkForCrisis(text) {
-    const lowerText = text.toLowerCase();
-    return crisisKeywords.some(keyword => lowerText.includes(keyword));
-}
-
+const crisisKeywords = ["suicide", "kill myself", "end it", "want to die", "give up", "no reason to live", "ending it all", "end my life"];
+function checkForCrisis(text) { return crisisKeywords.some(k => text.toLowerCase().includes(k)); }
 const crisisBotReply = {
-    content: "You are not alone. Please, if you are feeling overwhelmed and considering ending things, reach out for help right now. In Sri Lanka, you can call 1333 for free, confidential, 24/7 crisis support. We care about you and we want you here.",
-    authorUid: "system_bot",
-    authorNickname: "Haven Support Bot 🛡️",
-    createdAt: new Date().toISOString()
+    content: "You are not alone. Please, if you are feeling overwhelmed, reach out for help right now. In Sri Lanka, you can call 1333 for free, confidential, 24/7 crisis support. We care about you and we want you here.",
+    authorUid: "system_bot", authorNickname: "Haven Support Bot 🛡️", createdAt: new Date().toISOString()
 };
 
 // ----------------------------------------------------
@@ -181,7 +184,6 @@ const createPostForm = document.getElementById('createPostForm');
 const postsContainer = document.getElementById('postsContainer');
 
 if (createPostForm && postsContainer) {
-    
     if (isReadOnly) {
         document.getElementById('postContent').disabled = true;
         document.getElementById('postContent').placeholder = "Your account is restricted. You can read, but cannot post.";
@@ -195,20 +197,26 @@ if (createPostForm && postsContainer) {
             const post = docSnap.data();
             const postId = docSnap.id;
             
+            // --- THE VOID: AUTO-DELETE CHECK ---
+            if (post.isVoid && post.createdAt) {
+                const postTimeMillis = post.createdAt.toMillis ? post.createdAt.toMillis() : new Date(post.createdAt).getTime();
+                if (Date.now() - postTimeMillis > (24 * 60 * 60 * 1000)) {
+                    deleteDoc(doc(db, "posts", postId)); // Burn it!
+                    return; // Skip rendering
+                }
+            }
+            
             let timeString = post.createdAt && typeof post.createdAt.toDate === 'function' ? new Date(post.createdAt.toDate()).toLocaleString() : "Just now";
             const likesCount = post.likes || 0;
             const hasLiked = post.likedBy && user ? post.likedBy.includes(user.uid) : false;
             const isMyPost = user && post.authorUid === user.uid;
             const canDeletePost = isMyPost || isAdmin;
-            
             const authorAvatar = post.authorAvatar || 'fa-user-astronaut';
 
             const replies = post.replies || [];
             let repliesHtml = '';
             replies.forEach(reply => {
                 let safeContent = escapeHTML(reply.content).replace(/@([a-zA-Z0-9_]+)/g, '<strong style="color: var(--accent);">@$1</strong>');
-                
-                // Style the bot reply differently so it stands out
                 let isBot = reply.authorUid === "system_bot";
                 let replyBg = isBot ? "rgba(239, 68, 68, 0.1)" : "rgba(255,255,255,0.03)";
                 let replyBorder = isBot ? "3px solid var(--danger)" : "3px solid var(--primary)";
@@ -225,18 +233,21 @@ if (createPostForm && postsContainer) {
             });
             
             const newPost = document.createElement('div');
-            newPost.className = 'post-card glass-panel';
+            // Change style if it's a void post
+            newPost.className = post.isVoid ? 'post-card glass-panel void-post' : 'post-card glass-panel';
+            if (post.isVoid) newPost.style.background = 'rgba(0, 0, 0, 0.6)'; // Darker vibe for the void
+            
             newPost.innerHTML = `
                 <div class="post-header">
                     <div class="post-author-info">
                         <div class="avatar"><i class="fa-solid ${authorAvatar}"></i></div>
                         <div class="post-meta">
-                            <h4>${escapeHTML(post.authorNickname)}</h4>
+                            <h4>${escapeHTML(post.authorNickname)} ${post.isVoid ? '<span style="color:#6b7280; font-size:0.8rem;">(Into The Void 🕳️)</span>' : ''}</h4>
                             <span>${timeString}</span>
                         </div>
                     </div>
                 </div>
-                <div class="post-content"><p style="font-size: 1.05rem; line-height: 1.6;">${escapeHTML(post.content)}</p></div>
+                <div class="post-content"><p style="font-size: 1.05rem; line-height: 1.6; ${post.isVoid ? 'color: #9ca3af; font-style: italic;' : ''}">${escapeHTML(post.content)}</p></div>
                 
                 <div class="post-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
                     <button class="action-btn like ${hasLiked ? 'active' : ''}" onclick="window.toggleLike('${postId}', ${hasLiked})" style="color: ${hasLiked ? 'var(--accent)' : ''}">
@@ -246,6 +257,7 @@ if (createPostForm && postsContainer) {
                     ${canDeletePost ? `<button class="action-btn" onclick="window.deletePost('${postId}')" style="color: var(--danger); margin-left: auto;"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
                 </div>
 
+                ${!post.isVoid ? `
                 <div class="post-replies" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
                     <div style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem;">${repliesHtml}</div>
                     ${!isReadOnly ? `
@@ -254,11 +266,11 @@ if (createPostForm && postsContainer) {
                         <div id="sugg-${postId}" class="mention-suggestions" style="display:none; position:absolute; bottom:100%; left:0; width:250px; max-height:150px; margin-bottom:5px;"></div>
                         <button type="submit" class="btn-primary" style="padding: 0 1.2rem; border-radius: 8px;"><i class="fa-solid fa-paper-plane"></i></button>
                     </form>` : '<p style="color:var(--danger); font-size:0.85rem;">Your account is restricted. You cannot reply.</p>'}
-                </div>
+                </div>` : '<div style="margin-top:1rem; text-align:center; color:#6b7280; font-size:0.85rem;"><i class="fa-solid fa-lock"></i> Replies are disabled for Void posts.</div>'}
             `;
             postsContainer.appendChild(newPost);
 
-            if (!isReadOnly) {
+            if (!isReadOnly && !post.isVoid) {
                 const replyInp = document.getElementById(`reply-input-${postId}`);
                 const suggBox = document.getElementById(`sugg-${postId}`);
                 if(replyInp && suggBox) {
@@ -276,12 +288,10 @@ if (createPostForm && postsContainer) {
         submitBtn.disabled = true;
         
         const content = document.getElementById('postContent').value;
+        const isVoid = document.getElementById('isVoidPost') ? document.getElementById('isVoidPost').checked : false;
         
-        // --- CRISIS BOT CHECK ---
         let initialReplies = [];
-        if (checkForCrisis(content)) {
-            initialReplies.push(crisisBotReply);
-        }
+        if (checkForCrisis(content)) initialReplies.push(crisisBotReply);
         
         try {
             await addDoc(collection(db, "posts"), {
@@ -291,10 +301,12 @@ if (createPostForm && postsContainer) {
                 authorAvatar: user.avatar,
                 likes: 0, 
                 likedBy: [], 
-                replies: initialReplies, // Will contain the bot reply if triggered
+                replies: initialReplies,
+                isVoid: isVoid, // Save Void status to database
                 createdAt: serverTimestamp()
             });
             document.getElementById('postContent').value = '';
+            if (document.getElementById('isVoidPost')) document.getElementById('isVoidPost').checked = false;
         } catch (error) { alert("Failed to post."); } 
         finally { submitBtn.disabled = false; }
     });
@@ -349,7 +361,7 @@ if (createPostForm && postsContainer) {
 }
 
 // ----------------------------------------------------
-// CHAT LOGIC
+// CHAT & MODERATION (Unchanged beneath here)
 // ----------------------------------------------------
 const chatForm = document.getElementById('chatForm');
 const chatBox = document.getElementById('chatBox');
@@ -362,7 +374,6 @@ if (chatForm && chatBox) {
     } else {
         const msgInput = document.getElementById('chatMsg');
         msgInput.setAttribute('autocomplete', 'off');
-        
         const suggBoxChat = document.createElement('div');
         suggBoxChat.id = 'sugg-chat';
         suggBoxChat.className = 'mention-suggestions';
@@ -373,10 +384,8 @@ if (chatForm && chatBox) {
         suggBoxChat.style.width = '250px';
         suggBoxChat.style.maxHeight = '150px';
         suggBoxChat.style.marginBottom = '5px';
-
         chatForm.style.position = 'relative';
         chatForm.appendChild(suggBoxChat);
-
         msgInput.addEventListener('input', () => handleMentionInput(msgInput, suggBoxChat));
         msgInput.addEventListener('blur', () => setTimeout(() => suggBoxChat.style.display='none', 200));
     }
@@ -388,9 +397,7 @@ if (chatForm && chatBox) {
             const msg = docSnap.data();
             const msgId = docSnap.id;
             const isMine = user && msg.authorUid === user.uid;
-            
             let safeContent = escapeHTML(msg.content).replace(/@([a-zA-Z0-9_]+)/g, '<strong style="color: var(--accent);">@$1</strong>');
-
             const newMsg = document.createElement('div');
             newMsg.className = `msg-bubble ${isMine ? 'mine' : ''}`;
             newMsg.innerHTML = `
@@ -421,9 +428,6 @@ if (chatForm && chatBox) {
     };
 }
 
-// ----------------------------------------------------
-// REPORT MODAL LOGIC
-// ----------------------------------------------------
 const reportForm = document.getElementById('reportForm');
 if (reportForm) {
     reportForm.addEventListener('submit', async (e) => {
@@ -446,9 +450,6 @@ if (reportForm) {
     });
 }
 
-// ----------------------------------------------------
-// ADMIN DASHBOARD LOGIC
-// ----------------------------------------------------
 const adminData = document.getElementById('adminData');
 if (adminData) {
     if (!user || !user.adminRoles) {
@@ -457,35 +458,21 @@ if (adminData) {
         window.updateBanStatus = async (userUid, newStatus) => {
             try {
                 await updateDoc(doc(db, "users", userUid), { banStatus: newStatus });
-                alert("User ban status updated to: " + newStatus);
-            } catch (error) { alert("Failed to ban: " + error.message); }
+                alert("User ban status updated.");
+            } catch (error) { alert("Failed to ban."); }
         };
 
         window.loadAdminTab = async (tabName) => {
             adminData.innerHTML = '<div style="padding: 2rem; text-align: center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
-            
             if (tabName === 'identities') {
                 if (!user.adminRoles.view_identities) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
                 try {
                     const usersSnapshot = await getDocs(collection(db, "users"));
                     let html = `<table class="admin-table"><thead><tr><th>Nickname</th><th>Real Name</th><th>Phone</th><th>Gender</th><th>Ban Action</th></tr></thead><tbody>`;
-                    
                     usersSnapshot.forEach((docS) => {
                         const u = docS.data();
                         const uId = docS.id;
-                        html += `<tr>
-                            <td>${escapeHTML(u.nickname)}</td>
-                            <td class="sensitive-data">${escapeHTML(u.realName || 'N/A')}</td>
-                            <td class="sensitive-data">${escapeHTML(u.phone || 'N/A')}</td>
-                            <td>${escapeHTML(u.gender || 'N/A')}</td>
-                            <td>
-                                <select onchange="window.updateBanStatus('${uId}', this.value)" style="padding: 0.3rem; background: var(--bg-dark); color: white; border: 1px solid var(--danger);">
-                                    <option value="none" ${u.banStatus === 'none' || !u.banStatus ? 'selected' : ''}>Active</option>
-                                    <option value="read_only" ${u.banStatus === 'read_only' ? 'selected' : ''}>Read-Only Ban</option>
-                                    <option value="hard" ${u.banStatus === 'hard' ? 'selected' : ''}>HARD BAN</option>
-                                </select>
-                            </td>
-                        </tr>`;
+                        html += `<tr><td>${escapeHTML(u.nickname)}</td><td class="sensitive-data">${escapeHTML(u.realName || 'N/A')}</td><td class="sensitive-data">${escapeHTML(u.phone || 'N/A')}</td><td>${escapeHTML(u.gender || 'N/A')}</td><td><select onchange="window.updateBanStatus('${uId}', this.value)" style="padding: 0.3rem; background: var(--bg-dark); color: white; border: 1px solid var(--danger);"><option value="none" ${u.banStatus === 'none' || !u.banStatus ? 'selected' : ''}>Active</option><option value="read_only" ${u.banStatus === 'read_only' ? 'selected' : ''}>Read-Only Ban</option><option value="hard" ${u.banStatus === 'hard' ? 'selected' : ''}>HARD BAN</option></select></td></tr>`;
                     });
                     html += "</tbody></table>";
                     adminData.innerHTML = html;
