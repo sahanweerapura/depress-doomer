@@ -61,13 +61,13 @@
 
     <!-- Mobile Header -->
     <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
-        <div class="brand-logo" style="margin: 0; font-size: 1.5rem;"><i class="fa-solid fa-user-shield"></i> Dashboard</div>
+        <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-user-shield"></i> Dashboard</div>
     </header>
 
     <div class="app-layout">
         <!-- Left Sidebar (Desktop) -->
         <aside class="sidebar-left glass-panel">
-            <div class="brand-logo"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
+            <div class="brand-logo" style="cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
             <nav class="nav-links">
                 <a href="index.html" class="nav-item">
                     <i class="fa-solid fa-house"></i>
@@ -105,7 +105,6 @@
                 </div>
 
                 <div id="adminData" style="overflow-x: auto;">
-                    <!-- Table injected via app.js -->
                     <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
                         <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
                         <p style="margin-top: 1rem;">Loading secure data...</p>
@@ -125,9 +124,7 @@
 
     <!-- App Logic -->
     <script>
-        // STRICT ADMIN AUTH GUARD & RBAC Check
         const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
-        // Fallback: If they log in before RBAC was added, they won't have adminRoles. Let mentalistwuwi pass.
         const isSuperAdminEmail = user && user.email === 'mentalistwuwi@gmail.com';
         
         if (!user || (!user.adminRoles && !isSuperAdminEmail)) {
@@ -137,13 +134,11 @@
             const nameEl = document.getElementById('currentUserName');
             if (nameEl) nameEl.textContent = user.nickname;
             
-            // Show Manage Admins tab only for super admin
             if (isSuperAdminEmail || (user.adminRoles && user.adminRoles.isSuperAdmin)) {
                 document.getElementById('manageAdminsTab').style.display = 'inline-block';
             }
         }
 
-        // Tab Switcher
         function switchTab(tabName, btnElement) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
