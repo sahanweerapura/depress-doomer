@@ -5,7 +5,7 @@ const translations = {
             liveChat: "Live Chat",
             login: "Login",
             logout: "Logout",
-            feed: "Back to Feed"
+            feed: "Home"
         },
         feed: {
             sharePrompt: "Share what's on your mind...",
@@ -45,7 +45,7 @@ const translations = {
             liveChat: "සජීවී චැට්",
             login: "ඇතුල් වන්න",
             logout: "පිටවෙන්න",
-            feed: "ප්‍රධාන පිටුවට"
+            feed: "මුල් පිටුව"
         },
         feed: {
             sharePrompt: "ඔබගේ සිතුවිලි බෙදාගන්න...",
@@ -82,10 +82,8 @@ const translations = {
     }
 };
 
-// Language State
 let currentLang = localStorage.getItem('lang') || 'en';
 
-// Apply translations to all elements with data-i18n attribute
 function applyTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const keyPath = el.getAttribute('data-i18n');
@@ -95,7 +93,6 @@ function applyTranslations() {
             translation = translation[k];
         }
         if (translation) {
-            // Keep icons if they exist in the element
             if (el.querySelector('i')) {
                 const icon = el.querySelector('i').outerHTML;
                 el.innerHTML = translation + ' ' + icon;
@@ -106,7 +103,6 @@ function applyTranslations() {
     });
 }
 
-// Setup Language Switcher
 document.addEventListener('DOMContentLoaded', () => {
     const switcher = document.getElementById('langSwitcher');
     if (switcher) {
