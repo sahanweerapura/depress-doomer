@@ -33,6 +33,11 @@
                     <i class="fa-solid fa-message"></i>
                     <span data-i18n="nav.liveChat">Live Chat</span>
                 </a>
+                <!-- NOTIFICATION BELL -->
+                <a href="#" class="nav-item" onclick="openNotifications()">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>Notifications <span id="notifBadge" style="display:none; background: var(--danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: 5px;">0</span></span>
+                </a>
                 <a href="#" class="nav-item" id="logoutBtn">
                     <i class="fa-solid fa-right-from-bracket"></i>
                     <span data-i18n="nav.logout">Logout</span>
@@ -92,6 +97,13 @@
                     <i class="fa-solid fa-shield-check"></i> <span data-i18n="sidebar.privacy">100% Identity Protected</span>
                 </div>
             </div>
+            <!-- COMMUNITY USER COUNTER -->
+            <div class="widget glass-panel" style="margin-top: 1rem; border-color: rgba(99, 102, 241, 0.2);">
+                <h3><i class="fa-solid fa-users" style="color: var(--primary);"></i> Community Hub</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem;">
+                    Total Registered Doomers: <strong id="totalUserCount" style="color: white; font-size: 1.2rem;">...</strong>
+                </p>
+            </div>
         </aside>
     </div>
 
@@ -99,6 +111,7 @@
     <nav class="mobile-nav">
         <a href="index.html" class="mobile-nav-item active"><i class="fa-solid fa-house"></i></a>
         <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
+        <a href="#" class="mobile-nav-item" onclick="openNotifications()"><i class="fa-solid fa-bell"></i></a>
         <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
     </nav>
 
@@ -131,6 +144,19 @@
         </div>
     </div>
 
+    <!-- NOTIFICATION MODAL -->
+    <div class="modal-overlay" id="notifModal">
+        <div class="modal-content glass-panel" style="max-height: 80vh; display: flex; flex-direction: column;">
+            <h2 style="color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-bell"></i> Notifications</h2>
+            <div id="notifList" style="flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+                <!-- Notifications injected via JS -->
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="button" class="btn-primary" style="background: transparent; border: 1px solid var(--glass-border);" onclick="closeNotifications()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- App Logic -->
     <script>
         // AUTH GUARD & RBAC UI
@@ -141,13 +167,9 @@
             const nameEl = document.getElementById('currentUserName');
             if (nameEl) nameEl.textContent = user.nickname;
 
-            // Simple check for Super Admin to show panel button immediately
-            // Sub-admins will be checked fully in app.js, but super admin gets guaranteed UI fast.
             if (user.email === 'mentalistwuwi@gmail.com') {
                 injectAdminLink();
-            } else {
-                // We'll leave it to app.js to inject it if they are a sub-admin
-            }
+            } 
 
             function injectAdminLink() {
                 const navLinks = document.querySelectorAll('.nav-links');
@@ -169,7 +191,7 @@
                     mobileNav.insertBefore(adminLinkMob, mobileNav.lastElementChild);
                 }
             }
-            window.injectAdminLink = injectAdminLink; // Expose for app.js
+            window.injectAdminLink = injectAdminLink;
         }
     </script>
     <script>
