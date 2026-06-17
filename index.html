@@ -11,7 +11,6 @@
     <div class="blob blob-primary"></div>
     <div class="blob blob-accent"></div>
 
-    <!-- Mobile Header -->
     <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
         <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon"></i> Doomer</div>
         <select class="form-control" id="langSwitcherMobile" style="width: auto; padding: 0.5rem; background: transparent;">
@@ -21,26 +20,16 @@
     </header>
 
     <div class="app-layout">
-        <!-- Left Sidebar (Desktop) -->
         <aside class="sidebar-left glass-panel">
             <div class="brand-logo" style="cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
             <nav class="nav-links">
-                <a href="index.html" class="nav-item active">
-                    <i class="fa-solid fa-house"></i>
-                    <span data-i18n="nav.feed">Home</span>
-                </a>
-                <a href="chat.html" class="nav-item">
-                    <i class="fa-solid fa-message"></i>
-                    <span data-i18n="nav.liveChat">Live Chat</span>
-                </a>
+                <a href="index.html" class="nav-item active"><i class="fa-solid fa-house"></i><span data-i18n="nav.feed">Home</span></a>
+                <a href="chat.html" class="nav-item"><i class="fa-solid fa-message"></i><span data-i18n="nav.liveChat">Live Chat</span></a>
                 <a href="#" class="nav-item" onclick="openNotifications()">
                     <i class="fa-solid fa-bell"></i>
                     <span>Notifications <span id="notifBadge" style="display:none; background: var(--danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: 5px;">0</span></span>
                 </a>
-                <a href="#" class="nav-item" id="logoutBtn">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span data-i18n="nav.logout">Logout</span>
-                </a>
+                <a href="#" class="nav-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span data-i18n="nav.logout">Logout</span></a>
             </nav>
 
             <div class="user-profile-btn">
@@ -52,7 +41,6 @@
             </div>
         </aside>
 
-        <!-- Main Feed Center -->
         <main class="main-feed">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -1rem;" class="desktop-only">
                 <h2 style="font-weight: 800; font-size: 1.8rem;" data-i18n="nav.feed">Home</h2>
@@ -69,7 +57,13 @@
                     <div style="flex-grow: 1;">
                         <form id="createPostForm">
                             <textarea id="postContent" class="compose-textarea" rows="3" placeholder="Share your struggles completely anonymously..." data-i18n-placeholder="feed.sharePrompt" required></textarea>
-                            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                            
+                            <!-- NEW: The Void Toggle -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 1rem;">
+                                <label style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                                    <input type="checkbox" id="isVoidPost" style="accent-color: #4b5563; width: 16px; height: 16px;"> 
+                                    <span>🕳️ Send to The Void <br><small style="font-size: 0.7rem; color: #6b7280;">(Disables replies, auto-deletes in 24h)</small></span>
+                                </label>
                                 <button type="submit" class="btn-primary" data-i18n="feed.postButton">Share Anonymously</button>
                             </div>
                         </form>
@@ -77,13 +71,9 @@
                 </div>
             </div>
 
-            <!-- Feed Posts Container -->
-            <div id="postsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <!-- Posts injected via app.js -->
-            </div>
+            <div id="postsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
         </main>
 
-        <!-- Right Sidebar (Desktop) -->
         <aside class="sidebar-right">
             <div class="widget glass-panel">
                 <h3 data-i18n="sidebar.about"><i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> About the Haven</h3>
@@ -96,7 +86,6 @@
                     <i class="fa-solid fa-shield-check"></i> <span data-i18n="sidebar.privacy">100% Identity Protected</span>
                 </div>
             </div>
-            <!-- COMMUNITY USER COUNTER -->
             <div class="widget glass-panel" style="margin-top: 1rem; border-color: rgba(99, 102, 241, 0.2);">
                 <h3><i class="fa-solid fa-users" style="color: var(--primary);"></i> Community Hub</h3>
                 <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem;">
@@ -106,7 +95,7 @@
         </aside>
     </div>
 
-    <!-- Mobile Bottom Navigation -->
+    <!-- Mobile Nav -->
     <nav class="mobile-nav">
         <a href="index.html" class="mobile-nav-item active"><i class="fa-solid fa-house"></i></a>
         <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
@@ -114,11 +103,10 @@
         <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
     </nav>
 
-    <!-- Global Report Modal -->
+    <!-- Report Modal -->
     <div class="modal-overlay" id="reportModal">
         <div class="modal-content glass-panel">
             <h2 style="color: var(--danger); margin-bottom: 1rem;"><i class="fa-solid fa-flag"></i> Report Content</h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;">This report will be sent directly to the Admin team for review. Your identity will remain hidden.</p>
             <form id="reportForm">
                 <input type="hidden" id="reportTargetId">
                 <input type="hidden" id="reportTargetType">
@@ -132,43 +120,51 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Additional Context (Optional)</label>
+                    <label>Additional Context</label>
                     <textarea class="form-control" id="reportContext" rows="3"></textarea>
                 </div>
                 <div style="display: flex; gap: 1rem; justify-content: flex-end;">
                     <button type="button" class="btn-primary" style="background: transparent; border: 1px solid var(--glass-border);" onclick="closeReportModal()">Cancel</button>
-                    <button type="submit" class="btn-primary" style="background: var(--danger); box-shadow: 0 4px 15px rgba(239,68,68,0.3);">Submit Report</button>
+                    <button type="submit" class="btn-primary" style="background: var(--danger);">Submit</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- NOTIFICATION MODAL -->
+    <!-- Notification Modal -->
     <div class="modal-overlay" id="notifModal">
         <div class="modal-content glass-panel" style="max-height: 80vh; display: flex; flex-direction: column;">
             <h2 style="color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-bell"></i> Notifications</h2>
-            <div id="notifList" style="flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
-                <!-- Notifications injected via JS -->
-            </div>
+            <div id="notifList" style="flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;"></div>
             <div style="display: flex; justify-content: flex-end;">
                 <button type="button" class="btn-primary" style="background: transparent; border: 1px solid var(--glass-border);" onclick="closeNotifications()">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- App Logic -->
+    <!-- NEW: Daily Mood Check-in Modal -->
+    <div class="modal-overlay" id="moodModal">
+        <div class="modal-content glass-panel" style="text-align: center; max-width: 450px;">
+            <h2 style="color: white; margin-bottom: 0.5rem;">How heavy is the cloud today? ☁️</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Checking in with yourself is the first step. Be honest, no one else sees this.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <button class="btn-primary" style="background: rgba(16, 185, 129, 0.2); border: 1px solid var(--success); color: white;" onclick="window.logMood(1)">1 - Light & Clear</button>
+                <button class="btn-primary" style="background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: white;" onclick="window.logMood(2)">2 - Manageable</button>
+                <button class="btn-primary" style="background: rgba(99, 102, 241, 0.3); border: 1px solid var(--primary); color: white;" onclick="window.logMood(3)">3 - A bit heavy</button>
+                <button class="btn-primary" style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: white;" onclick="window.logMood(4)">4 - Very dark</button>
+                <button class="btn-primary" style="background: rgba(239, 68, 68, 0.2); border: 1px solid var(--danger); color: white;" onclick="window.logMood(5)">5 - Complete Storm</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
-        if (!user) {
-            window.location.href = "login.html";
-        } else {
+        if (!user) window.location.href = "login.html";
+        else {
             const nameEl = document.getElementById('currentUserName');
             if (nameEl) nameEl.textContent = user.nickname;
-
-            if (user.email === 'mentalistwuwi@gmail.com') {
-                injectAdminLink();
-            } 
-
+            if (user.email === 'mentalistwuwi@gmail.com') injectAdminLink();
             function injectAdminLink() {
                 const navLinks = document.querySelectorAll('.nav-links');
                 navLinks.forEach(nav => {
@@ -180,14 +176,6 @@
                         nav.insertBefore(adminLink, nav.lastElementChild);
                     }
                 });
-                const mobileNav = document.querySelector('.mobile-nav');
-                if (mobileNav && !mobileNav.querySelector('.admin-link')) {
-                    const adminLinkMob = document.createElement('a');
-                    adminLinkMob.href = "admin.html";
-                    adminLinkMob.className = "mobile-nav-item admin-link";
-                    adminLinkMob.innerHTML = '<i class="fa-solid fa-user-shield"></i>';
-                    mobileNav.insertBefore(adminLinkMob, mobileNav.lastElementChild);
-                }
             }
             window.injectAdminLink = injectAdminLink;
         }
@@ -197,9 +185,7 @@
             document.getElementById('reportTargetType').value = targetType;
             document.getElementById('reportModal').classList.add('active');
         }
-        function closeReportModal() {
-            document.getElementById('reportModal').classList.remove('active');
-        }
+        function closeReportModal() { document.getElementById('reportModal').classList.remove('active'); }
         window.openReportModal = openReportModal;
     </script>
     <script type="module" src="js/i18n.js"></script>
