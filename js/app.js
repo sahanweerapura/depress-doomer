@@ -14,7 +14,7 @@ function getCurrentUser() {
 }
 
 const user = getCurrentUser();
-const isAdmin = user && user.adminRoles; // Quick check to see if current user is an admin
+const isAdmin = user && user.adminRoles;
 
 // Simple HTML escaper
 function escapeHTML(str) {
@@ -28,7 +28,7 @@ function escapeHTML(str) {
 }
 
 // ----------------------------------------------------
-// GLOBAL INJECTIONS (Admin Link)
+// GLOBAL INJECTIONS
 // ----------------------------------------------------
 if (user && user.adminRoles) {
     if (typeof window.injectAdminLink === 'function') {
@@ -37,7 +37,7 @@ if (user && user.adminRoles) {
 }
 
 // ----------------------------------------------------
-// FEED LOGIC
+// FEED LOGIC WITH REPLY SYSTEM
 // ----------------------------------------------------
 const createPostForm = document.getElementById('createPostForm');
 const postsContainer = document.getElementById('postsContainer');
@@ -65,6 +65,24 @@ if (createPostForm && postsContainer) {
             // Check Permissions
             const isMyPost = user && post.authorUid === user.uid;
             const canDeletePost = isMyPost || isAdmin;
+
+            // Render Replies
+            const replies = post.replies || [];
+            let repliesHtml = '';
+            if (replies.length > 0) {
+                replies.forEach(reply => {
+                    let replyTime = new Date(reply.createdAt).toLocaleString();
+                    repliesHtml += `
+                        <div class="reply" style="margin-top: 0.8rem; padding: 0.8rem; background: rgba(255,255,255,0.03); border-radius: 8px; border-left: 3px solid var(--primary);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong style="color: var(--primary); font-size: 0.85rem;"><i class="fa-solid fa-reply fa-xs"></i> ${escapeHTML(reply.authorNickname)}</strong>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">${replyTime}</span>
+                            </div>
+                            <p style="font-size: 0.9rem; margin-top: 0.3rem; color: #e7e9ea;">${escapeHTML(reply.content)}</p>
+                        </div>
+                    `;
+                });
+            }
             
             const newPost = document.createElement('div');
             newPost.className = 'post-card glass-panel';
@@ -79,9 +97,11 @@ if (createPostForm && postsContainer) {
                     </div>
                 </div>
                 <div class="post-content">
-                    <p>${escapeHTML(post.content)}</p>
+                    <p style="font-size: 1.05rem; line-height: 1.6;">${escapeHTML(post.content)}</p>
                 </div>
-                <div class="post-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                
+                <!-- Action Buttons -->
+                <div class="post-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
                     <button class="action-btn like ${hasLiked ? 'active' : ''}" onclick="window.toggleLike('${postId}', ${hasLiked})" style="color: ${hasLiked ? 'var(--accent)' : ''}">
                         <i class="${hasLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> <span id="like-count-${postId}">${likesCount}</span>
                     </button>
@@ -93,11 +113,23 @@ if (createPostForm && postsContainer) {
                         <i class="fa-solid fa-trash"></i> Delete
                     </button>` : ''}
                 </div>
+
+                <!-- Reply Section -->
+                <div class="post-replies" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                    <div style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem;">
+                        ${repliesHtml}
+                    </div>
+                    <form onsubmit="window.submitReply(event, '${postId}')" style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="reply-input-${postId}" placeholder="Write an encouraging reply..." style="flex-grow: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white;" required>
+                        <button type="submit" class="btn-primary" style="padding: 0 1.2rem; border-radius: 8px;"><i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
             `;
             postsContainer.appendChild(newPost);
         });
     });
 
+    // Create New Top-Level Post
     createPostForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!user) { window.location.href = "login.html"; return; }
@@ -113,6 +145,7 @@ if (createPostForm && postsContainer) {
                 authorNickname: user.nickname,
                 likes: 0,
                 likedBy: [],
+                replies: [], // Initialize with empty replies array
                 createdAt: serverTimestamp()
             });
             document.getElementById('postContent').value = '';
@@ -151,6 +184,34 @@ if (createPostForm && postsContainer) {
             }
         }
     };
+
+    // Global Submit Reply
+    window.submitReply = async (event, postId) => {
+        event.preventDefault();
+        if (!user) return alert("Please login to reply.");
+
+        const inputField = document.getElementById(`reply-input-${postId}`);
+        const replyContent = inputField.value;
+        const submitBtn = event.target.querySelector('button');
+        submitBtn.disabled = true;
+
+        try {
+            await updateDoc(doc(db, "posts", postId), {
+                replies: arrayUnion({
+                    content: replyContent,
+                    authorUid: user.uid,
+                    authorNickname: user.nickname,
+                    createdAt: new Date().toISOString()
+                })
+            });
+            inputField.value = ''; // Clear input on success
+        } catch (error) {
+            console.error(error);
+            alert("Failed to send reply: " + error.message);
+        } finally {
+            submitBtn.disabled = false;
+        }
+    };
 }
 
 // ----------------------------------------------------
@@ -172,7 +233,6 @@ if (chatForm && chatBox) {
             const msg = docSnap.data();
             const msgId = docSnap.id;
             
-            // Permissions
             const isMine = user && msg.authorUid === user.uid;
             const canDeleteChat = isMine || isAdmin;
             
@@ -212,7 +272,6 @@ if (chatForm && chatBox) {
         }
     });
 
-    // Global Delete Chat
     window.deleteChat = async (chatId) => {
         if(confirm("Delete this message?")) {
             try {
@@ -263,7 +322,6 @@ if (reportForm) {
 // ----------------------------------------------------
 const adminData = document.getElementById('adminData');
 if (adminData) {
-    // Only load if user has adminRoles
     if (!user || !user.adminRoles) {
         adminData.innerHTML = "<p>Unauthorized.</p>";
     } else {
@@ -275,7 +333,6 @@ if (adminData) {
                     adminData.innerHTML = '<p style="color:var(--danger);">You do not have permission to view real identities.</p>';
                     return;
                 }
-                // Fetch Identities
                 try {
                     const postsSnapshot = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
                     
@@ -310,7 +367,6 @@ if (adminData) {
                     adminData.innerHTML = '<p style="color:var(--danger);">You do not have permission to view reports.</p>';
                     return;
                 }
-                // Fetch Reports
                 try {
                     const repSnap = await getDocs(query(collection(db, "reports"), orderBy("createdAt", "desc")));
                     
