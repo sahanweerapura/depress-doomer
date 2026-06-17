@@ -1,7 +1,8 @@
 import { db } from './firebase-config.js';
 import { 
     collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, 
-    doc, updateDoc, increment, arrayUnion, arrayRemove, getDoc, getDocs, setDoc, deleteDoc
+    doc, updateDoc, increment, arrayUnion, arrayRemove, getDoc, getDocs, setDoc, deleteDoc,
+    where, getCountFromServer 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Utility to get current user from local storage
@@ -27,14 +28,94 @@ function escapeHTML(str) {
         .replace(/'/g, "&#039;");
 }
 
-// ----------------------------------------------------
-// GLOBAL INJECTIONS
-// ----------------------------------------------------
 if (user && user.adminRoles) {
     if (typeof window.injectAdminLink === 'function') {
         window.injectAdminLink();
     }
 }
+
+// ----------------------------------------------------
+// TOTAL USER COUNTER
+// ----------------------------------------------------
+const totalUserCountEl = document.getElementById('totalUserCount');
+if (totalUserCountEl) {
+    async function fetchUserCount() {
+        try {
+            const snapshot = await getCountFromServer(collection(db, "users"));
+            totalUserCountEl.textContent = snapshot.data().count;
+        } catch(e) {
+            totalUserCountEl.textContent = "?";
+        }
+    }
+    fetchUserCount();
+}
+
+// ----------------------------------------------------
+// NOTIFICATION SYSTEM LOGIC
+// ----------------------------------------------------
+const notifBadge = document.getElementById('notifBadge');
+if (user && notifBadge) {
+    const qNotif = query(collection(db, "notifications"), where("recipientUid", "==", user.uid));
+    onSnapshot(qNotif, (snap) => {
+        let unreadCount = 0;
+        snap.forEach(d => { if(!d.data().read) unreadCount++; });
+        
+        if (unreadCount > 0) {
+            notifBadge.style.display = 'inline-block';
+            notifBadge.textContent = unreadCount;
+        } else {
+            notifBadge.style.display = 'none';
+        }
+    });
+}
+
+window.openNotifications = async () => {
+    document.getElementById('notifModal').classList.add('active');
+    const notifList = document.getElementById('notifList');
+    notifList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Loading...</p>';
+
+    if (!user) return;
+
+    try {
+        const q = query(collection(db, "notifications"), where("recipientUid", "==", user.uid));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            notifList.innerHTML = '<p style="text-align:center; color:var(--text-muted);">No new notifications.</p>';
+            return;
+        }
+
+        const notifs = [];
+        snap.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+        
+        notifs.sort((a, b) => {
+            const tA = a.createdAt ? a.createdAt.toMillis() : 0;
+            const tB = b.createdAt ? b.createdAt.toMillis() : 0;
+            return tB - tA;
+        });
+
+        notifList.innerHTML = '';
+        notifs.forEach(n => {
+            const bg = n.read ? 'transparent' : 'rgba(99, 102, 241, 0.1)';
+            const border = n.read ? 'var(--glass-border)' : 'var(--primary)';
+            notifList.innerHTML += `
+                <div style="padding: 1rem; background: ${bg}; border-left: 3px solid ${border}; border-radius: 4px; margin-bottom: 0.5rem;">
+                    <strong style="color: var(--primary);">${escapeHTML(n.senderNickname)}</strong> commented on your post: 
+                    <br><span style="color: var(--text-muted); font-size: 0.9rem;">"${escapeHTML(n.replySnippet)}"</span>
+                </div>
+            `;
+            if (!n.read) {
+                updateDoc(doc(db, "notifications", n.id), { read: true });
+            }
+        });
+    } catch (error) {
+        notifList.innerHTML = '<p style="color: var(--danger);">Error loading notifications.</p>';
+    }
+};
+
+window.closeNotifications = () => {
+    document.getElementById('notifModal').classList.remove('active');
+};
 
 // ----------------------------------------------------
 // FEED LOGIC WITH REPLY SYSTEM
@@ -43,7 +124,6 @@ const createPostForm = document.getElementById('createPostForm');
 const postsContainer = document.getElementById('postsContainer');
 
 if (createPostForm && postsContainer) {
-    // Listen to real-time posts
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
         postsContainer.innerHTML = '';
@@ -51,7 +131,6 @@ if (createPostForm && postsContainer) {
             const post = docSnap.data();
             const postId = docSnap.id;
             
-            // Safe Timestamp Fix
             let timeString = "Just now";
             if (post.createdAt && typeof post.createdAt.toDate === 'function') {
                 timeString = new Date(post.createdAt.toDate()).toLocaleString();
@@ -62,7 +141,6 @@ if (createPostForm && postsContainer) {
             const likesCount = post.likes || 0;
             const hasLiked = post.likedBy && user ? post.likedBy.includes(user.uid) : false;
             
-            // Check Permissions
             const isMyPost = user && post.authorUid === user.uid;
             const canDeletePost = isMyPost || isAdmin;
 
@@ -100,7 +178,6 @@ if (createPostForm && postsContainer) {
                     <p style="font-size: 1.05rem; line-height: 1.6;">${escapeHTML(post.content)}</p>
                 </div>
                 
-                <!-- Action Buttons -->
                 <div class="post-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
                     <button class="action-btn like ${hasLiked ? 'active' : ''}" onclick="window.toggleLike('${postId}', ${hasLiked})" style="color: ${hasLiked ? 'var(--accent)' : ''}">
                         <i class="${hasLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> <span id="like-count-${postId}">${likesCount}</span>
@@ -114,12 +191,11 @@ if (createPostForm && postsContainer) {
                     </button>` : ''}
                 </div>
 
-                <!-- Reply Section -->
                 <div class="post-replies" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
                     <div style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem;">
                         ${repliesHtml}
                     </div>
-                    <form onsubmit="window.submitReply(event, '${postId}')" style="display: flex; gap: 0.5rem;">
+                    <form onsubmit="window.submitReply(event, '${postId}', '${post.authorUid}')" style="display: flex; gap: 0.5rem;">
                         <input type="text" id="reply-input-${postId}" placeholder="Write an encouraging reply..." style="flex-grow: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white;" required>
                         <button type="submit" class="btn-primary" style="padding: 0 1.2rem; border-radius: 8px;"><i class="fa-solid fa-paper-plane"></i></button>
                     </form>
@@ -129,14 +205,11 @@ if (createPostForm && postsContainer) {
         });
     });
 
-    // Create New Top-Level Post
     createPostForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!user) { window.location.href = "login.html"; return; }
-
         const submitBtn = createPostForm.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
-
         const content = document.getElementById('postContent').value;
         try {
             await addDoc(collection(db, "posts"), {
@@ -145,7 +218,7 @@ if (createPostForm && postsContainer) {
                 authorNickname: user.nickname,
                 likes: 0,
                 likedBy: [],
-                replies: [], // Initialize with empty replies array
+                replies: [],
                 createdAt: serverTimestamp()
             });
             document.getElementById('postContent').value = '';
@@ -157,36 +230,24 @@ if (createPostForm && postsContainer) {
         }
     });
 
-    // Global Like Toggle
     window.toggleLike = async (postId, currentlyLiked) => {
         if (!user) return alert("Please login.");
         const postRef = doc(db, "posts", postId);
         if (currentlyLiked) {
-            await updateDoc(postRef, {
-                likes: increment(-1),
-                likedBy: arrayRemove(user.uid)
-            });
+            await updateDoc(postRef, { likes: increment(-1), likedBy: arrayRemove(user.uid) });
         } else {
-            await updateDoc(postRef, {
-                likes: increment(1),
-                likedBy: arrayUnion(user.uid)
-            });
+            await updateDoc(postRef, { likes: increment(1), likedBy: arrayUnion(user.uid) });
         }
     };
 
-    // Global Delete Post
     window.deletePost = async (postId) => {
         if(confirm("Are you sure you want to permanently delete this post?")) {
-            try {
-                await deleteDoc(doc(db, "posts", postId));
-            } catch(e) {
-                alert("Error deleting post: " + e.message);
-            }
+            try { await deleteDoc(doc(db, "posts", postId)); } 
+            catch(e) { alert("Error deleting post: " + e.message); }
         }
     };
 
-    // Global Submit Reply
-    window.submitReply = async (event, postId) => {
+    window.submitReply = async (event, postId, postAuthorUid) => {
         event.preventDefault();
         if (!user) return alert("Please login to reply.");
 
@@ -204,7 +265,20 @@ if (createPostForm && postsContainer) {
                     createdAt: new Date().toISOString()
                 })
             });
-            inputField.value = ''; // Clear input on success
+            inputField.value = '';
+
+            // Notify the post author
+            if (postAuthorUid !== user.uid) {
+                await addDoc(collection(db, "notifications"), {
+                    recipientUid: postAuthorUid,
+                    senderNickname: user.nickname,
+                    replySnippet: replyContent.substring(0, 40) + '...',
+                    postId: postId,
+                    read: false,
+                    createdAt: serverTimestamp()
+                });
+            }
+
         } catch (error) {
             console.error(error);
             alert("Failed to send reply: " + error.message);
@@ -232,7 +306,6 @@ if (chatForm && chatBox) {
         snapshot.forEach((docSnap) => {
             const msg = docSnap.data();
             const msgId = docSnap.id;
-            
             const isMine = user && msg.authorUid === user.uid;
             const canDeleteChat = isMine || isAdmin;
             
@@ -254,31 +327,22 @@ if (chatForm && chatBox) {
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!user) return window.location.href = "login.html";
-
         const msgInput = document.getElementById('chatMsg');
-        const content = msgInput.value;
-        
         try {
             await addDoc(collection(db, "chats"), {
-                content: content,
+                content: msgInput.value,
                 authorUid: user.uid,
                 authorNickname: user.nickname,
                 createdAt: serverTimestamp()
             });
             msgInput.value = '';
-        } catch (error) {
-            console.error(error);
-            alert("Failed to send message.");
-        }
+        } catch (error) { alert("Failed to send message."); }
     });
 
     window.deleteChat = async (chatId) => {
         if(confirm("Delete this message?")) {
-            try {
-                await deleteDoc(doc(db, "chats", chatId));
-            } catch(e) {
-                alert("Error deleting chat: " + e.message);
-            }
+            try { await deleteDoc(doc(db, "chats", chatId)); } 
+            catch(e) { alert("Error deleting chat: " + e.message); }
         }
     };
 }
@@ -291,18 +355,12 @@ if (reportForm) {
     reportForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!user) return alert("Please login.");
-
-        const targetId = document.getElementById('reportTargetId').value;
-        const targetType = document.getElementById('reportTargetType').value;
-        const reason = document.getElementById('reportReason').value;
-        const context = document.getElementById('reportContext').value;
-
         try {
             await addDoc(collection(db, "reports"), {
-                targetId,
-                targetType,
-                reason,
-                context,
+                targetId: document.getElementById('reportTargetId').value,
+                targetType: document.getElementById('reportTargetType').value,
+                reason: document.getElementById('reportReason').value,
+                context: document.getElementById('reportContext').value,
                 reporterUid: user.uid,
                 status: "Pending",
                 createdAt: serverTimestamp()
@@ -310,10 +368,7 @@ if (reportForm) {
             alert("Report submitted successfully.");
             window.closeReportModal();
             document.getElementById('reportContext').value = '';
-        } catch (error) {
-            console.error(error);
-            alert("Failed to submit report.");
-        }
+        } catch (error) { alert("Failed to submit report."); }
     });
 }
 
@@ -329,16 +384,10 @@ if (adminData) {
             adminData.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);"><i class="fa-solid fa-spinner fa-spin fa-2x"></i><p style="margin-top: 1rem;">Fetching Secure Data...</p></div>';
             
             if (tabName === 'identities') {
-                if (!user.adminRoles.view_identities) {
-                    adminData.innerHTML = '<p style="color:var(--danger);">You do not have permission to view real identities.</p>';
-                    return;
-                }
+                if (!user.adminRoles.view_identities) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
                 try {
                     const postsSnapshot = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
-                    
-                    let html = `<table class="admin-table">
-                        <thead><tr><th>Post Snippet</th><th>Nickname</th><th>Real Name</th><th>Phone</th><th>Gender</th></tr></thead><tbody>`;
-                    
+                    let html = `<table class="admin-table"><thead><tr><th>Post Snippet</th><th>Nickname</th><th>Real Name</th><th>Phone</th><th>Gender</th></tr></thead><tbody>`;
                     const uCache = {};
                     for (const docS of postsSnapshot.docs) {
                         const p = docS.data();
@@ -350,85 +399,47 @@ if (adminData) {
                             }
                             if (uCache[p.authorUid]) r = uCache[p.authorUid];
                         }
-                        html += `<tr>
-                            <td>${escapeHTML(p.content.substring(0, 30))}...</td>
-                            <td>${escapeHTML(p.authorNickname)}</td>
-                            <td class="sensitive-data">${escapeHTML(r.realName || 'N/A')}</td>
-                            <td class="sensitive-data">${escapeHTML(r.phone || 'N/A')}</td>
-                            <td class="sensitive-data">${escapeHTML(r.gender || 'N/A')}</td>
-                        </tr>`;
+                        html += `<tr><td>${escapeHTML(p.content.substring(0, 30))}...</td><td>${escapeHTML(p.authorNickname)}</td><td class="sensitive-data">${escapeHTML(r.realName || 'N/A')}</td><td class="sensitive-data">${escapeHTML(r.phone || 'N/A')}</td><td class="sensitive-data">${escapeHTML(r.gender || 'N/A')}</td></tr>`;
                     }
                     html += "</tbody></table>";
                     adminData.innerHTML = html;
                 } catch (e) { adminData.innerHTML = `<p>Error: ${e.message}</p>`; }
             } 
             else if (tabName === 'reports') {
-                if (!user.adminRoles.view_reports) {
-                    adminData.innerHTML = '<p style="color:var(--danger);">You do not have permission to view reports.</p>';
-                    return;
-                }
+                if (!user.adminRoles.view_reports) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
                 try {
                     const repSnap = await getDocs(query(collection(db, "reports"), orderBy("createdAt", "desc")));
-                    
-                    let html = `<table class="admin-table">
-                        <thead><tr><th>Target Type</th><th>Reason</th><th>Context</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
-                    
+                    let html = `<table class="admin-table"><thead><tr><th>Target Type</th><th>Reason</th><th>Context</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
                     repSnap.forEach(d => {
                         const r = d.data();
-                        html += `<tr>
-                            <td><span style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;">${escapeHTML(r.targetType)}</span></td>
-                            <td>${escapeHTML(r.reason)}</td>
-                            <td>${escapeHTML(r.context)}</td>
-                            <td style="color: ${r.status === 'Pending' ? 'var(--accent)' : 'var(--success)'};">${escapeHTML(r.status)}</td>
-                            <td>
-                                ${r.status === 'Pending' ? `<button onclick="window.resolveReport('${d.id}')" style="background:var(--success); color:white; border:none; padding:0.5rem; border-radius:4px; cursor:pointer;">Resolve</button>` : 'Resolved'}
-                            </td>
-                        </tr>`;
+                        html += `<tr><td><span style="background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;">${escapeHTML(r.targetType)}</span></td><td>${escapeHTML(r.reason)}</td><td>${escapeHTML(r.context)}</td><td style="color: ${r.status === 'Pending' ? 'var(--accent)' : 'var(--success)'};">${escapeHTML(r.status)}</td><td>${r.status === 'Pending' ? `<button onclick="window.resolveReport('${d.id}')" style="background:var(--success); color:white; border:none; padding:0.5rem; border-radius:4px; cursor:pointer;">Resolve</button>` : 'Resolved'}</td></tr>`;
                     });
                     html += "</tbody></table>";
                     adminData.innerHTML = html;
                 } catch (e) { adminData.innerHTML = `<p>Error: ${e.message}</p>`; }
             }
             else if (tabName === 'manage_admins') {
-                if (!user.adminRoles.isSuperAdmin) {
-                    adminData.innerHTML = '<p style="color:var(--danger);">Only the Super Admin can manage other admins.</p>';
-                    return;
-                }
-                
+                if (!user.adminRoles.isSuperAdmin) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
                 adminData.innerHTML = `
                     <div style="max-width: 500px; margin: 0 auto; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--glass-border);">
                         <h3 style="margin-bottom: 1rem;">Add New Admin</h3>
                         <form id="addAdminForm">
-                            <div style="margin-bottom: 1rem;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Admin Email</label>
-                                <input type="email" id="newAdminEmail" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; border-radius: 4px;" required>
-                            </div>
-                            <div style="margin-bottom: 1rem;">
-                                <label><input type="checkbox" id="chkViewReports" checked> Can View & Resolve Reports</label><br><br>
-                                <label><input type="checkbox" id="chkViewIdentities"> Can View Real Identities <span style="color:var(--danger); font-size:0.8rem;">(High Risk)</span></label>
-                            </div>
+                            <div style="margin-bottom: 1rem;"><label style="display:block; margin-bottom: 0.5rem;">Admin Email</label><input type="email" id="newAdminEmail" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: white; border-radius: 4px;" required></div>
+                            <div style="margin-bottom: 1rem;"><label><input type="checkbox" id="chkViewReports" checked> Can View & Resolve Reports</label><br><br><label><input type="checkbox" id="chkViewIdentities"> Can View Real Identities <span style="color:var(--danger); font-size:0.8rem;">(High Risk)</span></label></div>
                             <button type="submit" style="background: var(--primary); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 4px; cursor: pointer;">Grant Admin Access</button>
                         </form>
                     </div>
                 `;
-
                 document.getElementById('addAdminForm').addEventListener('submit', async (e) => {
                     e.preventDefault();
-                    const email = document.getElementById('newAdminEmail').value;
-                    const vRep = document.getElementById('chkViewReports').checked;
-                    const vIden = document.getElementById('chkViewIdentities').checked;
-                    
                     try {
-                        await setDoc(doc(db, "admins", email), {
-                            view_reports: vRep,
-                            view_identities: vIden,
+                        await setDoc(doc(db, "admins", document.getElementById('newAdminEmail').value), {
+                            view_reports: document.getElementById('chkViewReports').checked,
+                            view_identities: document.getElementById('chkViewIdentities').checked,
                             isSuperAdmin: false
                         });
-                        alert("Admin access granted to " + email);
-                        document.getElementById('newAdminEmail').value = '';
-                    } catch (error) {
-                        alert("Error: " + error.message);
-                    }
+                        alert("Admin access granted!");
+                    } catch (error) { alert("Error: " + error.message); }
                 });
             }
         };
