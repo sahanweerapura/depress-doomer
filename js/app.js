@@ -26,7 +26,79 @@ if (user && user.adminRoles) {
     if (typeof window.injectAdminLink === 'function') window.injectAdminLink();
 }
 
+// ----------------------------------------------------
+// MENTION AUTO-SUGGEST POPUP LOGIC
+// ----------------------------------------------------
+const mentionStyle = document.createElement('style');
+mentionStyle.innerHTML = `
+    .mention-suggestions { background: #1a1a2e; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); overflow-y: auto; z-index: 1000; }
+    .mention-suggestions::-webkit-scrollbar { width: 5px; }
+    .mention-suggestions::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 5px; }
+    .mention-item { padding: 0.8rem 1rem; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e7e9ea; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
+    .mention-item:hover { background: rgba(99,102,241,0.2); color: white; }
+    .mention-item:last-child { border-bottom: none; }
+`;
+document.head.appendChild(mentionStyle);
+
+let mentionTimeout;
+async function handleMentionInput(inputElement, suggestionBoxElement) {
+    const val = inputElement.value;
+    const cursorPosition = inputElement.selectionStart;
+    const textBeforeCursor = val.substring(0, cursorPosition);
+    
+    // Check if typing an @mention right before the cursor
+    const match = textBeforeCursor.match(/@([a-zA-Z0-9_]+)$/);
+    
+    if (match) {
+        const searchTerm = match[1];
+        clearTimeout(mentionTimeout);
+        
+        // Wait 300ms before searching database to save reads
+        mentionTimeout = setTimeout(async () => {
+            try {
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, 
+                    where("nickname", ">=", searchTerm), 
+                    where("nickname", "<=", searchTerm + '\uf8ff')
+                );
+                
+                const snap = await getDocs(q);
+                suggestionBoxElement.innerHTML = '';
+                
+                if (!snap.empty) {
+                    suggestionBoxElement.style.display = 'block';
+                    snap.forEach(docSnap => {
+                        const nick = docSnap.data().nickname;
+                        const avatar = docSnap.data().gender === 'Female' ? 'fa-person-dress' : (docSnap.data().gender === 'Male' ? 'fa-person' : 'fa-user-astronaut');
+                        
+                        const div = document.createElement('div');
+                        div.className = 'mention-item';
+                        div.innerHTML = `<i class="fa-solid ${avatar}" style="color:var(--primary);"></i> ${nick}`;
+                        
+                        div.onmousedown = (e) => {
+                            e.preventDefault(); // Stop keyboard from hiding
+                            const before = val.substring(0, match.index);
+                            const after = val.substring(cursorPosition);
+                            inputElement.value = before + "@" + nick + " " + after;
+                            suggestionBoxElement.style.display = 'none';
+                            inputElement.focus();
+                        };
+                        suggestionBoxElement.appendChild(div);
+                    });
+                } else {
+                    suggestionBoxElement.style.display = 'none';
+                }
+            } catch(e) { console.error(e); }
+        }, 300);
+    } else {
+        suggestionBoxElement.style.display = 'none';
+    }
+}
+
+
+// ----------------------------------------------------
 // NOTIFICATIONS & USER COUNTER
+// ----------------------------------------------------
 const totalUserCountEl = document.getElementById('totalUserCount');
 if (totalUserCountEl) {
     async function fetchUserCount() {
@@ -85,7 +157,9 @@ window.openNotifications = async () => {
 window.closeNotifications = () => document.getElementById('notifModal').classList.remove('active');
 
 
+// ----------------------------------------------------
 // FEED LOGIC
+// ----------------------------------------------------
 const createPostForm = document.getElementById('createPostForm');
 const postsContainer = document.getElementById('postsContainer');
 
@@ -111,7 +185,6 @@ if (createPostForm && postsContainer) {
             const isMyPost = user && post.authorUid === user.uid;
             const canDeletePost = isMyPost || isAdmin;
             
-            // Assign Avatar based on saved gender
             const authorAvatar = post.authorAvatar || 'fa-user-astronaut';
 
             const replies = post.replies || [];
@@ -153,13 +226,24 @@ if (createPostForm && postsContainer) {
                 <div class="post-replies" style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
                     <div style="max-height: 300px; overflow-y: auto; margin-bottom: 1rem;">${repliesHtml}</div>
                     ${!isReadOnly ? `
-                    <form onsubmit="window.submitReply(event, '${postId}', '${post.authorUid}')" style="display: flex; gap: 0.5rem;">
-                        <input type="text" id="reply-input-${postId}" placeholder="Use @Nickname to tag..." style="flex-grow: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white;" required>
+                    <form onsubmit="window.submitReply(event, '${postId}', '${post.authorUid}')" style="display: flex; gap: 0.5rem; position: relative;">
+                        <input type="text" id="reply-input-${postId}" autocomplete="off" placeholder="Use @Nickname to tag..." style="flex-grow: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white;" required>
+                        <div id="sugg-${postId}" class="mention-suggestions" style="display:none; position:absolute; bottom:100%; left:0; width:250px; max-height:150px; margin-bottom:5px;"></div>
                         <button type="submit" class="btn-primary" style="padding: 0 1.2rem; border-radius: 8px;"><i class="fa-solid fa-paper-plane"></i></button>
                     </form>` : '<p style="color:var(--danger); font-size:0.85rem;">Your account is restricted. You cannot reply.</p>'}
                 </div>
             `;
             postsContainer.appendChild(newPost);
+
+            // BIND THE POPUP LOGIC TO THIS NEW POST
+            if (!isReadOnly) {
+                const replyInp = document.getElementById(`reply-input-${postId}`);
+                const suggBox = document.getElementById(`sugg-${postId}`);
+                if(replyInp && suggBox) {
+                    replyInp.addEventListener('input', () => handleMentionInput(replyInp, suggBox));
+                    replyInp.addEventListener('blur', () => setTimeout(() => suggBox.style.display='none', 200));
+                }
+            }
         });
     });
 
@@ -230,7 +314,9 @@ if (createPostForm && postsContainer) {
     };
 }
 
+// ----------------------------------------------------
 // CHAT LOGIC
+// ----------------------------------------------------
 const chatForm = document.getElementById('chatForm');
 const chatBox = document.getElementById('chatBox');
 
@@ -239,6 +325,27 @@ if (chatForm && chatBox) {
         document.getElementById('chatMsg').disabled = true;
         document.getElementById('chatMsg').placeholder = "Restricted from chatting.";
         chatForm.querySelector('button').disabled = true;
+    } else {
+        // BIND POPUP LOGIC TO CHAT INPUT
+        const msgInput = document.getElementById('chatMsg');
+        msgInput.setAttribute('autocomplete', 'off');
+        
+        const suggBoxChat = document.createElement('div');
+        suggBoxChat.id = 'sugg-chat';
+        suggBoxChat.className = 'mention-suggestions';
+        suggBoxChat.style.display = 'none';
+        suggBoxChat.style.position = 'absolute';
+        suggBoxChat.style.bottom = '100%';
+        suggBoxChat.style.left = '0';
+        suggBoxChat.style.width = '250px';
+        suggBoxChat.style.maxHeight = '150px';
+        suggBoxChat.style.marginBottom = '5px';
+
+        chatForm.style.position = 'relative';
+        chatForm.appendChild(suggBoxChat);
+
+        msgInput.addEventListener('input', () => handleMentionInput(msgInput, suggBoxChat));
+        msgInput.addEventListener('blur', () => setTimeout(() => suggBoxChat.style.display='none', 200));
     }
 
     const q = query(collection(db, "chats"), orderBy("createdAt", "asc"));
@@ -249,11 +356,14 @@ if (chatForm && chatBox) {
             const msgId = docSnap.id;
             const isMine = user && msg.authorUid === user.uid;
             
+            // Highlight Mentions in Chat Too!
+            let safeContent = escapeHTML(msg.content).replace(/@([a-zA-Z0-9_]+)/g, '<strong style="color: var(--accent);">@$1</strong>');
+
             const newMsg = document.createElement('div');
             newMsg.className = `msg-bubble ${isMine ? 'mine' : ''}`;
             newMsg.innerHTML = `
                 <div class="msg-author">${escapeHTML(msg.authorNickname)}</div>
-                <div class="msg-content">${escapeHTML(msg.content)}</div>
+                <div class="msg-content">${safeContent}</div>
                 <div class="msg-actions" style="margin-top: 5px;">
                     ${!isMine ? `<button class="action-btn report" onclick="window.openReportModal('${msgId}', 'chat')" style="color: var(--danger);"><i class="fa-solid fa-flag"></i></button>` : ''}
                     ${isMine || isAdmin ? `<button class="action-btn" onclick="window.deleteChat('${msgId}')" style="color: #666; margin-left: 10px;"><i class="fa-solid fa-trash"></i></button>` : ''}
@@ -279,13 +389,39 @@ if (chatForm && chatBox) {
     };
 }
 
+// ----------------------------------------------------
+// REPORT MODAL LOGIC
+// ----------------------------------------------------
+const reportForm = document.getElementById('reportForm');
+if (reportForm) {
+    reportForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!user) return alert("Please login.");
+        try {
+            await addDoc(collection(db, "reports"), {
+                targetId: document.getElementById('reportTargetId').value,
+                targetType: document.getElementById('reportTargetType').value,
+                reason: document.getElementById('reportReason').value,
+                context: document.getElementById('reportContext').value,
+                reporterUid: user.uid,
+                status: "Pending",
+                createdAt: serverTimestamp()
+            });
+            alert("Report submitted successfully.");
+            window.closeReportModal();
+            document.getElementById('reportContext').value = '';
+        } catch (error) { alert("Failed to submit report."); }
+    });
+}
+
+// ----------------------------------------------------
 // ADMIN DASHBOARD LOGIC
+// ----------------------------------------------------
 const adminData = document.getElementById('adminData');
 if (adminData) {
     if (!user || !user.adminRoles) {
         adminData.innerHTML = "<p>Unauthorized.</p>";
     } else {
-        // NEW: Function to instantly ban users from the Admin Panel
         window.updateBanStatus = async (userUid, newStatus) => {
             try {
                 await updateDoc(doc(db, "users", userUid), { banStatus: newStatus });
