@@ -13,7 +13,7 @@
 
     <!-- Mobile Header -->
     <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
-        <div class="brand-logo" style="margin: 0; font-size: 1.5rem;"><i class="fa-solid fa-moon"></i> Doomer</div>
+        <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon"></i> Doomer</div>
         <select class="form-control" id="langSwitcherMobile" style="width: auto; padding: 0.5rem; background: transparent;">
             <option value="en">EN</option>
             <option value="si">SI</option>
@@ -23,7 +23,7 @@
     <div class="app-layout">
         <!-- Left Sidebar (Desktop) -->
         <aside class="sidebar-left glass-panel">
-            <div class="brand-logo"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
+            <div class="brand-logo" style="cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
             <nav class="nav-links">
                 <a href="index.html" class="nav-item active">
                     <i class="fa-solid fa-house"></i>
@@ -33,7 +33,6 @@
                     <i class="fa-solid fa-message"></i>
                     <span data-i18n="nav.liveChat">Live Chat</span>
                 </a>
-                <!-- NOTIFICATION BELL -->
                 <a href="#" class="nav-item" onclick="openNotifications()">
                     <i class="fa-solid fa-bell"></i>
                     <span>Notifications <span id="notifBadge" style="display:none; background: var(--danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: 5px;">0</span></span>
@@ -159,7 +158,6 @@
 
     <!-- App Logic -->
     <script>
-        // AUTH GUARD & RBAC UI
         const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
         if (!user) {
             window.location.href = "login.html";
@@ -193,9 +191,7 @@
             }
             window.injectAdminLink = injectAdminLink;
         }
-    </script>
-    <script>
-        // Modal functions
+
         function openReportModal(targetId, targetType) {
             document.getElementById('reportTargetId').value = targetId;
             document.getElementById('reportTargetType').value = targetType;
