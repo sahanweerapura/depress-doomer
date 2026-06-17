@@ -10,7 +10,9 @@ const translations = {
         feed: {
             sharePrompt: "Share what's on your mind...",
             postButton: "Post Anonymously",
-            reply: "Reply"
+            reply: "Reply",
+            voidText: "🕳️ Send to The Void",
+            voidTooltip: "(Disables replies, hides from public after 24h)"
         },
         sidebar: {
             about: "About Us",
@@ -38,6 +40,15 @@ const translations = {
             title: "General Anonymous Chat",
             warning: "WARNING: Please avoid sharing your personal information with anyone. Stay completely anonymous.",
             send: "Send"
+        },
+        mood: {
+            title: "How heavy is the cloud today? ☁️",
+            desc: "Checking in with yourself is the first step. Be honest, no one else sees this.",
+            btn1: "1 - Light & Clear",
+            btn2: "2 - Manageable",
+            btn3: "3 - A bit heavy",
+            btn4: "4 - Very dark",
+            btn5: "5 - Complete Storm"
         }
     },
     si: {
@@ -50,7 +61,9 @@ const translations = {
         feed: {
             sharePrompt: "ඔබගේ සිතුවිලි බෙදාගන්න...",
             postButton: "නිර්නාමිකව පළ කරන්න",
-            reply: "පිළිතුරු"
+            reply: "පිළිතුරු",
+            voidText: "🕳️ අඳුරු කුටියට යවන්න (Void)",
+            voidTooltip: "(පිළිතුරු දීම අක්‍රිය කරයි, පැය 24කට පසු සැඟවී යයි)"
         },
         sidebar: {
             about: "අප ගැන",
@@ -78,6 +91,15 @@ const translations = {
             title: "පොදු නිර්නාමික චැට්",
             warning: "අවවාදයයි: කරුණාකර ඔබගේ පෞද්ගලික තොරතුරු කිසිවෙකු සමඟ බෙදාගැනීමෙන් වළකින්න. සම්පූර්ණයෙන්ම නිර්නාමිකව සිටින්න.",
             send: "යවන්න"
+        },
+        mood: {
+            title: "අද දවස ඔබට කොහොමද දැනෙන්නේ? ☁️",
+            desc: "ඔබ ගැන සොයා බැලීම පළමු පියවරයි. අවංක වන්න, මෙය වෙන කිසිවෙකුට නොපෙනේ.",
+            btn1: "1 - ඉතා සැහැල්ලුයි",
+            btn2: "2 - සාමාන්‍යයි",
+            btn3: "3 - ටිකක් බරයි",
+            btn4: "4 - ගොඩක් අඳුරුයි",
+            btn5: "5 - සම්පූර්ණයෙන්ම කඩා වැටිලා"
         }
     }
 };
@@ -101,15 +123,41 @@ function applyTranslations() {
             }
         }
     });
+    
+    // Specifically handle placeholders for inputs/textareas
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const keyPath = el.getAttribute('data-i18n-placeholder');
+        const keys = keyPath.split('.');
+        let translation = translations[currentLang];
+        for (const k of keys) {
+            translation = translation[k];
+        }
+        if (translation) {
+            el.placeholder = translation;
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     const switcher = document.getElementById('langSwitcher');
+    const mobileSwitcher = document.getElementById('langSwitcherMobile');
+    
     if (switcher) {
         switcher.value = currentLang;
         switcher.addEventListener('change', (e) => {
             currentLang = e.target.value;
             localStorage.setItem('lang', currentLang);
+            if (mobileSwitcher) mobileSwitcher.value = currentLang;
+            applyTranslations();
+        });
+    }
+    
+    if (mobileSwitcher) {
+        mobileSwitcher.value = currentLang;
+        mobileSwitcher.addEventListener('change', (e) => {
+            currentLang = e.target.value;
+            localStorage.setItem('lang', currentLang);
+            if (switcher) switcher.value = currentLang;
             applyTranslations();
         });
     }
