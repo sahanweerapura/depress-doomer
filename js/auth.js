@@ -33,7 +33,6 @@ onAuthStateChanged(auth, async (user) => {
             if (user.email === 'mentalistwuwi@gmail.com') {
                 adminRoles = { view_reports: true, view_identities: true, isSuperAdmin: true };
             } else {
-                const adminDoc = await getDoc(doc(db, "admins", user.uid)); // Or email, let's use uid or email. Let's use email since it's easier to manually add.
                 const adminDocEmail = await getDoc(doc(db, "admins", user.email));
                 if (adminDocEmail.exists()) {
                     adminRoles = adminDocEmail.data();
@@ -70,12 +69,21 @@ if (signupForm) {
         submitBtn.disabled = true;
         submitBtn.textContent = "Creating Account...";
 
+        const nickname = document.getElementById('nickname').value;
+        
+        // --- NEW: Block Spaces in Nickname ---
+        if (nickname.includes(' ')) {
+            alert("Nicknames cannot contain spaces! Please use an underscore or join the words together (e.g., Sad_Doomer).");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Create Anonymous Account";
+            return;
+        }
+
         try {
             const realName = document.getElementById('realName').value;
             const age = document.getElementById('age').value;
             const phone = document.getElementById('phone').value;
             const email = document.getElementById('email').value;
-            const nickname = document.getElementById('nickname').value;
             const password = document.getElementById('password').value;
             const gender = document.getElementById('gender').value;
 
@@ -83,7 +91,7 @@ if (signupForm) {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Save Real Details to Firestore (Admin only via Security Rules)
+            // Save Real Details to Firestore
             await setDoc(doc(db, "users", user.uid), {
                 realName,
                 age,
@@ -133,23 +141,17 @@ if (googleLoginBtn) {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
             
-            // Check if user exists in Firestore and has completed profile
             const docRef = doc(db, "users", user.uid);
             const docSnap = await getDoc(docRef);
             
             if (!docSnap.exists() || docSnap.data().phone === "Pending") {
-                // Profile is incomplete. Show modal.
                 pendingGoogleUser = user;
-                
-                // Pre-fill name and random nickname
                 document.getElementById('cpName').value = user.displayName || "";
                 document.getElementById('cpNickname').value = "Anon_" + Math.floor(Math.random() * 10000);
                 
-                // Hide login box, show modal
                 document.querySelector('.auth-wrapper').style.display = 'none';
                 completeProfileModal.classList.add('active');
             } else {
-                // Profile is complete, redirect to home
                 window.location.href = "index.html";
             }
         } catch (error) {
@@ -159,7 +161,7 @@ if (googleLoginBtn) {
     });
 }
 
-// Handle Complete Profile Form (After Google Login)
+// Handle Complete Profile Form
 if (completeProfileForm) {
     completeProfileForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -167,14 +169,22 @@ if (completeProfileForm) {
         submitBtn.disabled = true;
         submitBtn.textContent = "Saving...";
 
+        const nickname = document.getElementById('cpNickname').value;
+
+        // --- NEW: Block Spaces in Nickname ---
+        if (nickname.includes(' ')) {
+            alert("Nicknames cannot contain spaces! Please use an underscore or join the words together.");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Save & Continue";
+            return;
+        }
+
         try {
             const realName = document.getElementById('cpName').value;
             const phone = document.getElementById('cpPhone').value;
             const gender = document.getElementById('cpGender').value;
             const age = document.getElementById('cpAge').value;
-            const nickname = document.getElementById('cpNickname').value;
 
-            // Save to Firestore
             await setDoc(doc(db, "users", pendingGoogleUser.uid), {
                 realName: realName,
                 email: pendingGoogleUser.email,
@@ -185,7 +195,6 @@ if (completeProfileForm) {
                 createdAt: new Date().toISOString()
             });
 
-            // Update localStorage manually since onAuthStateChanged already fired
             localStorage.setItem('depressDoomerUser', JSON.stringify({
                 uid: pendingGoogleUser.uid,
                 email: pendingGoogleUser.email,
