@@ -15,6 +15,7 @@ function getCurrentUser() {
 
 const user = getCurrentUser();
 const isAdmin = user && user.adminRoles;
+const isSuperAdmin = user && user.adminRoles && user.adminRoles.isSuperAdmin;
 const isReadOnly = user && user.banStatus === "read_only";
 
 function escapeHTML(str) {
@@ -197,12 +198,15 @@ if (createPostForm && postsContainer) {
             const post = docSnap.data();
             const postId = docSnap.id;
             
-            // --- THE VOID: AUTO-DELETE CHECK ---
+            // --- THE VOID: EXPIRATION CHECK ---
             if (post.isVoid && post.createdAt) {
                 const postTimeMillis = post.createdAt.toMillis ? post.createdAt.toMillis() : new Date(post.createdAt).getTime();
                 if (Date.now() - postTimeMillis > (24 * 60 * 60 * 1000)) {
-                    deleteDoc(doc(db, "posts", postId)); // Burn it!
-                    return; // Skip rendering
+                    // Hide it from regular users, but allow Super Admins to still see it
+                    if (!isSuperAdmin) {
+                        return; // Skip rendering for the public entirely
+                    }
+                    post.isExpiredVoid = true; // Mark it so the admin knows it's expired
                 }
             }
             
@@ -233,16 +237,20 @@ if (createPostForm && postsContainer) {
             });
             
             const newPost = document.createElement('div');
-            // Change style if it's a void post
             newPost.className = post.isVoid ? 'post-card glass-panel void-post' : 'post-card glass-panel';
-            if (post.isVoid) newPost.style.background = 'rgba(0, 0, 0, 0.6)'; // Darker vibe for the void
+            if (post.isVoid) newPost.style.background = 'rgba(0, 0, 0, 0.6)';
+            
+            let voidBadge = post.isVoid ? '<span style="color:#6b7280; font-size:0.8rem;">(Into The Void 🕳️)</span>' : '';
+            if (post.isExpiredVoid) {
+                voidBadge += ' <span style="color:var(--danger); font-size:0.7rem; margin-left: 5px;">[EXPIRED - ADMIN VIEW]</span>';
+            }
             
             newPost.innerHTML = `
                 <div class="post-header">
                     <div class="post-author-info">
                         <div class="avatar"><i class="fa-solid ${authorAvatar}"></i></div>
                         <div class="post-meta">
-                            <h4>${escapeHTML(post.authorNickname)} ${post.isVoid ? '<span style="color:#6b7280; font-size:0.8rem;">(Into The Void 🕳️)</span>' : ''}</h4>
+                            <h4>${escapeHTML(post.authorNickname)} ${voidBadge}</h4>
                             <span>${timeString}</span>
                         </div>
                     </div>
@@ -302,7 +310,7 @@ if (createPostForm && postsContainer) {
                 likes: 0, 
                 likedBy: [], 
                 replies: initialReplies,
-                isVoid: isVoid, // Save Void status to database
+                isVoid: isVoid,
                 createdAt: serverTimestamp()
             });
             document.getElementById('postContent').value = '';
@@ -361,7 +369,7 @@ if (createPostForm && postsContainer) {
 }
 
 // ----------------------------------------------------
-// CHAT & MODERATION (Unchanged beneath here)
+// CHAT & MODERATION
 // ----------------------------------------------------
 const chatForm = document.getElementById('chatForm');
 const chatBox = document.getElementById('chatBox');
