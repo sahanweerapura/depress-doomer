@@ -6,6 +6,9 @@
     <title>Depress Doomer</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media (max-width: 768px) { .desktop-only { display: none !important; } }
+    </style>
 </head>
 <body>
     <div class="blob blob-primary"></div>
@@ -32,17 +35,17 @@
                 <a href="#" class="nav-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span data-i18n="nav.logout">Logout</span></a>
             </nav>
 
-            <div class="user-profile-btn">
+            <div class="user-profile-btn" style="cursor:pointer;" onclick="window.location.href='profile.html'">
                 <div class="avatar" id="currentUserAvatar"><i class="fa-solid fa-user-astronaut"></i></div>
                 <div style="display: flex; flex-direction: column;">
                     <strong id="currentUserName" style="font-size: 1rem;">Anonymous</strong>
-                    <span style="color: var(--text-muted); font-size: 0.85rem;">Private User</span>
+                    <span style="color: var(--primary); font-size: 0.85rem;">View My Profile</span>
                 </div>
             </div>
         </aside>
 
         <main class="main-feed">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -1rem;" class="desktop-only">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;" class="desktop-only">
                 <h2 style="font-weight: 800; font-size: 1.8rem;" data-i18n="nav.feed">Home</h2>
                 <select class="form-control" id="langSwitcher" style="width: auto; padding: 0.5rem;">
                     <option value="en">English</option>
@@ -50,7 +53,14 @@
                 </select>
             </div>
 
-            <!-- Compose Post Box -->
+            <div class="widget glass-panel" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.2); padding: 1rem 1.5rem;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.1rem;"><i class="fa-solid fa-users" style="color: var(--primary);"></i> Community Hub</h3>
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Total Registered Doomers</span>
+                </div>
+                <strong id="totalUserCount" style="color: white; font-size: 1.5rem;">...</strong>
+            </div>
+
             <div class="compose-box glass-panel">
                 <div style="display: flex; gap: 1rem;">
                     <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
@@ -88,16 +98,9 @@
                     <i class="fa-solid fa-shield-check"></i> <span data-i18n="sidebar.privacy">100% Identity Protected</span>
                 </div>
             </div>
-            <div class="widget glass-panel" style="margin-top: 1rem; border-color: rgba(99, 102, 241, 0.2);">
-                <h3><i class="fa-solid fa-users" style="color: var(--primary);"></i> Community Hub</h3>
-                <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem;">
-                    Total Registered Doomers: <strong id="totalUserCount" style="color: white; font-size: 1.2rem;">...</strong>
-                </p>
-            </div>
         </aside>
     </div>
 
-    <!-- Mobile Nav -->
     <nav class="mobile-nav">
         <a href="index.html" class="mobile-nav-item active"><i class="fa-solid fa-house"></i></a>
         <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
@@ -105,7 +108,6 @@
         <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
     </nav>
 
-    <!-- Report Modal -->
     <div class="modal-overlay" id="reportModal">
         <div class="modal-content glass-panel">
             <h2 style="color: var(--danger); margin-bottom: 1rem;"><i class="fa-solid fa-flag"></i> Report Content</h2>
@@ -133,7 +135,6 @@
         </div>
     </div>
 
-    <!-- Notification Modal -->
     <div class="modal-overlay" id="notifModal">
         <div class="modal-content glass-panel" style="max-height: 80vh; display: flex; flex-direction: column;">
             <h2 style="color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-bell"></i> Notifications</h2>
@@ -144,7 +145,6 @@
         </div>
     </div>
 
-    <!-- MOOD CHECK-IN MODAL (TRANSLATED) -->
     <div class="modal-overlay" id="moodModal">
         <div class="modal-content glass-panel" style="text-align: center; max-width: 450px;">
             <h2 style="color: white; margin-bottom: 0.5rem;" data-i18n="mood.title">How heavy is the cloud today? ☁️</h2>
