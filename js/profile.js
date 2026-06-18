@@ -7,7 +7,6 @@ if (!user) window.location.href = "login.html";
 
 function escapeHTML(str) { return !str ? '' : str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
-// Global UI Setup
 const nameEl = document.getElementById('currentUserName');
 if (nameEl) nameEl.textContent = user.nickname;
 const currentUserAvatarEl = document.getElementById('currentUserAvatar');
@@ -17,7 +16,6 @@ if (currentUserAvatarEl && user) {
         : `<i class="fa-solid ${escapeHTML(user.avatar || 'fa-user-astronaut')}"></i>`;
 }
 
-// Profile Logic
 const urlParams = new URLSearchParams(window.location.search);
 const targetUid = urlParams.get('uid') || user.uid;
 const isMyProfile = (targetUid === user.uid);
@@ -27,6 +25,8 @@ const userPostsContainer = document.getElementById('userPostsContainer');
 
 async function loadProfile() {
     try {
+        if (!targetUid) throw new Error("User ID is missing from local storage.");
+
         const userDoc = await getDoc(doc(db, "users", targetUid));
         if (!userDoc.exists()) {
             profileHeaderBox.innerHTML = `<h3>User not found.</h3>`;
@@ -34,7 +34,7 @@ async function loadProfile() {
         }
         
         const uData = userDoc.data();
-        const joinDate = new Date(uData.createdAt).toLocaleDateString();
+        const joinDate = uData.createdAt ? new Date(uData.createdAt).toLocaleDateString() : "Unknown Date";
         const avatarDisplay = uData.avatarBase64 
             ? `<img src="${uData.avatarBase64}" alt="Avatar">`
             : `<i class="fa-solid ${escapeHTML(uData.gender === 'Female' ? 'fa-person-dress' : (uData.gender === 'Male' ? 'fa-person' : 'fa-user-astronaut'))}"></i>`;
@@ -49,7 +49,6 @@ async function loadProfile() {
 
         if (isMyProfile) document.getElementById('profileBioInput').value = uData.bio || "";
 
-        // Query WITHOUT orderBy to bypass the Firebase Index requirement
         const q = query(collection(db, "posts"), where("authorUid", "==", targetUid));
         const postSnaps = await getDocs(q);
         userPostsContainer.innerHTML = '';
@@ -64,7 +63,6 @@ async function loadProfile() {
                 postsArray.push(p);
             });
 
-            // Sort by time in memory using JavaScript instead of the database
             postsArray.sort((a, b) => {
                 const tA = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
                 const tB = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
@@ -84,7 +82,11 @@ async function loadProfile() {
                 `;
             });
         }
-    } catch(e) { console.error(e); profileHeaderBox.innerHTML = `<p style="color:var(--danger);">Error loading profile. Check console for details.</p>`; }
+    } catch(e) { 
+        console.error(e); 
+        // THIS WILL PRINT THE EXACT CAUSE ON SCREEN
+        profileHeaderBox.innerHTML = `<p style="color:var(--danger); font-size:1.2rem; font-weight:bold;">CRASH: ${escapeHTML(e.message)}</p>`; 
+    }
 }
 
 loadProfile();
