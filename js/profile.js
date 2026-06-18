@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, query, where, orderBy, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 function getCurrentUser() { return JSON.parse(localStorage.getItem('depressDoomerUser')); }
 const user = getCurrentUser();
@@ -49,18 +49,32 @@ async function loadProfile() {
 
         if (isMyProfile) document.getElementById('profileBioInput').value = uData.bio || "";
 
-        const q = query(collection(db, "posts"), where("authorUid", "==", targetUid), orderBy("createdAt", "desc"));
+        // Query WITHOUT orderBy to bypass the Firebase Index requirement
+        const q = query(collection(db, "posts"), where("authorUid", "==", targetUid));
         const postSnaps = await getDocs(q);
         userPostsContainer.innerHTML = '';
         
         if (postSnaps.empty) {
             userPostsContainer.innerHTML = `<p style="text-align:center; color:var(--text-muted);">No public posts yet.</p>`;
         } else {
+            let postsArray = [];
             postSnaps.forEach(docSnap => {
-                const post = docSnap.data();
+                let p = docSnap.data();
+                p.id = docSnap.id;
+                postsArray.push(p);
+            });
+
+            // Sort by time in memory using JavaScript instead of the database
+            postsArray.sort((a, b) => {
+                const tA = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+                const tB = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+                return tB - tA;
+            });
+
+            postsArray.forEach(post => {
                 if(post.isVoid && post.authorUid !== user.uid) return; 
                 
-                const timeStr = new Date(post.createdAt).toLocaleString();
+                const timeStr = post.createdAt && typeof post.createdAt.toDate === 'function' ? new Date(post.createdAt.toDate()).toLocaleString() : "Just now";
                 userPostsContainer.innerHTML += `
                     <div class="post-card glass-panel" style="${post.isVoid ? 'background: rgba(0,0,0,0.6);' : ''}">
                         <div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">${timeStr} ${post.isVoid ? '🕳️ (Void)' : ''}</div>
@@ -70,12 +84,11 @@ async function loadProfile() {
                 `;
             });
         }
-    } catch(e) { console.error(e); profileHeaderBox.innerHTML = `<p style="color:var(--danger);">Error loading profile.</p>`; }
+    } catch(e) { console.error(e); profileHeaderBox.innerHTML = `<p style="color:var(--danger);">Error loading profile. Check console for details.</p>`; }
 }
 
 loadProfile();
 
-// --- THE BASE64 HACK: Compress image to string ---
 function compressImageToBase64(file, callback) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -84,14 +97,13 @@ function compressImageToBase64(file, callback) {
         img.src = event.target.result;
         img.onload = () => {
             const canvas = document.createElement('canvas');
-            const MAX_SIZE = 150; // Extremely small to save database space
+            const MAX_SIZE = 150; 
             let width = img.width; let height = img.height;
             if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
             else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
             canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-            // Convert back to string (JPEG format at 70% quality)
             callback(canvas.toDataURL('image/jpeg', 0.7));
         };
     };
@@ -108,7 +120,6 @@ if (editProfileForm) {
             let updateData = { bio: document.getElementById('profileBioInput').value };
             const fileInput = document.getElementById('profileImageInput');
             
-            // If they picked an image, compress it and save the string
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 compressImageToBase64(file, async (base64String) => {
