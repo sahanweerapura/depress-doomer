@@ -28,6 +28,7 @@
             <nav class="nav-links">
                 <a href="index.html" class="nav-item active"><i class="fa-solid fa-house"></i><span data-i18n="nav.feed">Home</span></a>
                 <a href="chat.html" class="nav-item"><i class="fa-solid fa-message"></i><span data-i18n="nav.liveChat">Live Chat</span></a>
+                <a href="about.html" class="nav-item"><i class="fa-solid fa-circle-info"></i><span data-i18n="nav.aboutNav">About</span></a>
                 <a href="#" class="nav-item" onclick="openNotifications()">
                     <i class="fa-solid fa-bell"></i>
                     <span>Notifications <span id="notifBadge" style="display:none; background: var(--danger); color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.7rem; margin-left: 5px;">0</span></span>
@@ -61,6 +62,7 @@
                 <strong id="totalUserCount" style="color: white; font-size: 1.5rem;">...</strong>
             </div>
 
+            <!-- Compose Post Box -->
             <div class="compose-box glass-panel">
                 <div style="display: flex; gap: 1rem;">
                     <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
@@ -101,13 +103,16 @@
         </aside>
     </div>
 
+    <!-- Mobile Nav -->
     <nav class="mobile-nav">
         <a href="index.html" class="mobile-nav-item active"><i class="fa-solid fa-house"></i></a>
         <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
+        <a href="about.html" class="mobile-nav-item"><i class="fa-solid fa-circle-info"></i></a>
         <a href="#" class="mobile-nav-item" onclick="openNotifications()"><i class="fa-solid fa-bell"></i></a>
-        <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
+        <a href="profile.html" class="mobile-nav-item"><i class="fa-solid fa-user"></i></a>
     </nav>
 
+    <!-- Report Modal -->
     <div class="modal-overlay" id="reportModal">
         <div class="modal-content glass-panel">
             <h2 style="color: var(--danger); margin-bottom: 1rem;"><i class="fa-solid fa-flag"></i> Report Content</h2>
@@ -135,6 +140,7 @@
         </div>
     </div>
 
+    <!-- Notification Modal -->
     <div class="modal-overlay" id="notifModal">
         <div class="modal-content glass-panel" style="max-height: 80vh; display: flex; flex-direction: column;">
             <h2 style="color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-bell"></i> Notifications</h2>
@@ -145,6 +151,7 @@
         </div>
     </div>
 
+    <!-- MOOD CHECK-IN MODAL -->
     <div class="modal-overlay" id="moodModal">
         <div class="modal-content glass-panel" style="text-align: center; max-width: 450px;">
             <h2 style="color: white; margin-bottom: 0.5rem;" data-i18n="mood.title">How heavy is the cloud today? ☁️</h2>
@@ -201,7 +208,6 @@
             window.location.href = "login.html";
         };
         document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
-        document.getElementById('logoutBtnMobile')?.addEventListener('click', doLogout);
     </script>
 </body>
 </html>
