@@ -2,8 +2,14 @@ import { auth, db, googleProvider } from './firebase-config.js';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const signupForm = document.getElementById('signupForm'); const loginForm = document.getElementById('loginForm'); const googleLoginBtn = document.getElementById('googleLoginBtn'); const completeProfileModal = document.getElementById('completeProfileModal'); const completeProfileForm = document.getElementById('completeProfileForm');
-let currentUserData = null; let pendingGoogleUser = null; 
+const signupForm = document.getElementById('signupForm'); 
+const loginForm = document.getElementById('loginForm'); 
+const googleLoginBtn = document.getElementById('googleLoginBtn'); 
+const completeProfileModal = document.getElementById('completeProfileModal'); 
+const completeProfileForm = document.getElementById('completeProfileForm');
+
+let currentUserData = null; 
+let pendingGoogleUser = null; 
 
 function getAvatarIcon(gender) {
     if (gender === 'Female') return 'fa-person-dress';
@@ -24,7 +30,7 @@ onAuthStateChanged(auth, async (user) => {
             localStorage.setItem('depressDoomerUser', JSON.stringify({
                 uid: user.uid, email: user.email, nickname: currentUserData.nickname,
                 avatar: getAvatarIcon(currentUserData.gender),
-                avatarBase64: currentUserData.avatarBase64 || null, // Saves the new string
+                avatarBase64: currentUserData.avatarBase64 || null, 
                 bio: currentUserData.bio || "", banStatus: currentUserData.banStatus || "none", adminRoles: adminRoles
             }));
             
@@ -37,9 +43,18 @@ onAuthStateChanged(auth, async (user) => {
 
 if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); const submitBtn = signupForm.querySelector('button[type="submit"]'); submitBtn.disabled = true;
+        e.preventDefault(); 
+        
+        const termsBox = document.getElementById('agreeTerms');
+        if (termsBox && !termsBox.checked) {
+            alert("You must agree to the Terms of The Haven to continue.");
+            return;
+        }
+
+        const submitBtn = signupForm.querySelector('button[type="submit"]'); submitBtn.disabled = true;
         const nickname = document.getElementById('nickname').value;
         if (nickname.includes(' ')) { alert("Nicknames cannot contain spaces!"); submitBtn.disabled = false; return; }
+        
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
             await setDoc(doc(db, "users", userCredential.user.uid), { realName: document.getElementById('realName').value, age: document.getElementById('age').value, phone: document.getElementById('phone').value, gender: document.getElementById('gender').value, email: document.getElementById('email').value, nickname, banStatus: "none", bio: "", avatarBase64: null, createdAt: new Date().toISOString() });
