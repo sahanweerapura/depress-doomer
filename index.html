@@ -62,7 +62,6 @@
                 <strong id="totalUserCount" style="color: white; font-size: 1.5rem;">...</strong>
             </div>
 
-            <!-- Compose Post Box -->
             <div class="compose-box glass-panel">
                 <div style="display: flex; gap: 1rem;">
                     <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
@@ -89,16 +88,17 @@
         </main>
 
         <aside class="sidebar-right">
-            <div class="widget glass-panel">
-                <h3 data-i18n="sidebar.about"><i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> About the Haven</h3>
-                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6;" data-i18n="sidebar.description">
-                    This is a highly secure, completely anonymous space designed for those going through dark times. 
-                </p>
-            </div>
-            <div class="widget glass-panel" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+            <div class="widget glass-panel" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); margin-bottom: 1.5rem;">
                 <div style="color: var(--success); font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fa-solid fa-shield-check"></i> <span data-i18n="sidebar.privacy">100% Identity Protected</span>
                 </div>
+            </div>
+            <div class="widget glass-panel">
+                <h3 data-i18n="sidebar.about"><i class="fa-solid fa-circle-info" style="color: var(--primary);"></i> About the Haven</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;" data-i18n="sidebar.description">
+                    This is a highly secure, completely anonymous space designed for those going through dark times. 
+                </p>
+                <a href="about.html" class="btn-primary" style="display: block; text-align: center; text-decoration: none; font-size: 0.9rem; padding: 0.5rem;">Read Our Vision</a>
             </div>
         </aside>
     </div>
@@ -198,7 +198,7 @@
         window.openReportModal = openReportModal;
     </script>
     <script type="module" src="js/i18n.js"></script>
-    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/app.js?v=6"></script>
     <script type="module">
         import { auth } from './js/firebase-config.js';
         import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
