@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Depress Doomer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media (max-width: 768px) { .desktop-only { display: none !important; } }
+        .about-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); padding: 2rem; border-radius: 12px; margin-bottom: 1.5rem; transition: transform 0.3s ease; }
+        .about-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .about-card h3 { color: white; margin-bottom: 1rem; font-size: 1.4rem; }
+        .about-card p { color: var(--text-muted); line-height: 1.8; font-size: 1.05rem; }
+    </style>
+</head>
+<body>
+    <div class="blob blob-primary"></div>
+    <div class="blob blob-accent"></div>
+
+    <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
+        <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon"></i> Doomer</div>
+        <select class="form-control" id="langSwitcherMobile" style="width: auto; padding: 0.5rem; background: transparent;">
+            <option value="en">EN</option>
+            <option value="si">SI</option>
+        </select>
+    </header>
+
+    <div class="app-layout">
+        <aside class="sidebar-left glass-panel">
+            <div class="brand-logo" style="cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span data-i18n="nav.feed">Home</span></a>
+                <a href="chat.html" class="nav-item"><i class="fa-solid fa-message"></i><span data-i18n="nav.liveChat">Live Chat</span></a>
+                <a href="about.html" class="nav-item active"><i class="fa-solid fa-circle-info"></i><span data-i18n="nav.aboutNav">About</span></a>
+                <a href="#" class="nav-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span data-i18n="nav.logout">Logout</span></a>
+            </nav>
+            <div class="user-profile-btn" style="cursor:pointer;" onclick="window.location.href='profile.html'">
+                <div class="avatar" id="currentUserAvatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                <div style="display: flex; flex-direction: column;">
+                    <strong id="currentUserName" style="font-size: 1rem;">Anonymous</strong>
+                    <span style="color: var(--primary); font-size: 0.85rem;">View My Profile</span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-feed">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;" class="desktop-only">
+                <h2 style="font-weight: 800; font-size: 1.8rem;" data-i18n="aboutPage.pageTitle">About The Haven</h2>
+                <select class="form-control" id="langSwitcher" style="width: auto; padding: 0.5rem;">
+                    <option value="en">English</option>
+                    <option value="si">සිංහල</option>
+                </select>
+            </div>
+
+            <div class="about-card glass-panel" style="background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.3);">
+                <h3 data-i18n="aboutPage.introTitle">A Sanctuary for Your Mind 🌌</h3>
+                <p data-i18n="aboutPage.introText">We created Depress Doomer because sometimes the weight of the world is too heavy to carry alone. This is a safe haven where you can release your darkest thoughts, express your hidden pain, and connect with others who truly understand, all without the fear of judgment or exposure.</p>
+            </div>
+
+            <div class="about-card glass-panel" style="border-left: 4px solid #6b7280;">
+                <h3 data-i18n="aboutPage.voidTitle">The Void 🕳️</h3>
+                <p data-i18n="aboutPage.voidText">Not every thought needs a reply or advice. Sometimes, you just need to scream into the abyss to let the pain out. 'The Void' is a special feature where replies are completely disabled. After 24 hours, your message naturally fades away from the public eye. It is your personal space to let go and breathe.</p>
+            </div>
+
+            <div class="about-card glass-panel" style="border-left: 4px solid var(--success);">
+                <h3 data-i18n="aboutPage.anonTitle">Absolute Anonymity 🛡️</h3>
+                <p data-i18n="aboutPage.anonText">Your identity is sacred here. We only collect your real details internally to keep the platform safe from bots and bad actors. To the community, you are known only by your chosen Nickname and Avatar. Your secrets are safe with us.</p>
+            </div>
+
+            <div class="about-card glass-panel" style="border-left: 4px solid var(--accent);">
+                <h3 data-i18n="aboutPage.communityTitle">You Are Not Alone 🤝</h3>
+                <p data-i18n="aboutPage.communityText">Whether you use the Mood Check-in to track your feelings, post on the main feed to find support, or jump into the Live Chat to connect instantly, remember: no matter how dark it gets, there are people here who care.</p>
+            </div>
+        </main>
+
+        <aside class="sidebar-right">
+            <div class="widget glass-panel" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2);">
+                <div style="color: var(--success); font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fa-solid fa-shield-check"></i> <span data-i18n="sidebar.privacy">100% Identity Protected</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 10px;">Your peace of mind is our priority.</p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Mobile Nav -->
+    <nav class="mobile-nav">
+        <a href="index.html" class="mobile-nav-item"><i class="fa-solid fa-house"></i></a>
+        <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
+        <a href="about.html" class="mobile-nav-item active"><i class="fa-solid fa-circle-info"></i></a>
+        <a href="profile.html" class="mobile-nav-item"><i class="fa-solid fa-user"></i></a>
+    </nav>
+
+    <script type="module" src="js/i18n.js"></script>
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        
+        const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
+        if (!user) window.location.href = "login.html";
+        else {
+            const nameEl = document.getElementById('currentUserName');
+            if (nameEl) nameEl.textContent = user.nickname;
+            const currentUserAvatarEl = document.getElementById('currentUserAvatar');
+            if (currentUserAvatarEl) {
+                function escapeHTML(str) { return !str ? '' : str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+                currentUserAvatarEl.innerHTML = user.avatarBase64 ? `<img src="${user.avatarBase64}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` : `<i class="fa-solid ${escapeHTML(user.avatar || 'fa-user-astronaut')}"></i>`;
+            }
+        }
+
+        const doLogout = async () => { await signOut(auth); localStorage.removeItem('depressDoomerUser'); window.location.href = "login.html"; };
+        document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+    </script>
+</body>
+</html>
