@@ -1,4 +1,3 @@
-// Translations for English and Sinhala
 const translations = {
     en: {
         nav: {
