@@ -1,165 +1,101 @@
-import { db } from './firebase-config.js';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Depress Doomer</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @media (max-width: 768px) { .desktop-only { display: none !important; } }
+        .profile-header { text-align: center; padding: 2rem; border-bottom: 1px solid var(--glass-border); margin-bottom: 2rem; background: rgba(0,0,0,0.2); border-radius: 12px;}
+        .profile-avatar-large { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 3rem; background: rgba(0,0,0,0.3); overflow: hidden; }
+        .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
+        .bio-text { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 1rem auto; line-height: 1.6; }
+        .mood-box { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+        .mood-badge { padding: 0.3rem 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 15px; font-size: 0.85rem; color: white; }
+    </style>
+</head>
+<body>
+    <div class="blob blob-primary"></div>
+    <div class="blob blob-accent"></div>
 
-function getCurrentUser() { return JSON.parse(localStorage.getItem('depressDoomerUser')); }
-const user = getCurrentUser();
+    <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
+        <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon"></i> Doomer</div>
+    </header>
 
-// Safe wrapper to prevent crashes if user is somehow logged out
-if (!user) {
-    window.location.href = "login.html";
-} else {
-    function escapeHTML(str) { return !str ? '' : str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+    <div class="app-layout">
+        <aside class="sidebar-left glass-panel">
+            <div class="brand-logo" style="cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
+                <a href="chat.html" class="nav-item"><i class="fa-solid fa-message"></i><span>Live Chat</span></a>
+                <a href="#" class="nav-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+            </nav>
+            <div class="user-profile-btn" style="cursor:pointer;" onclick="window.location.href='profile.html'">
+                <div class="avatar" id="currentUserAvatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                <div style="display: flex; flex-direction: column;">
+                    <strong id="currentUserName" style="font-size: 1rem;">Anonymous</strong>
+                    <span style="color: var(--primary); font-size: 0.85rem;">View My Profile</span>
+                </div>
+            </div>
+        </aside>
 
-    const nameEl = document.getElementById('currentUserName');
-    if (nameEl) nameEl.textContent = user.nickname;
-    
-    const currentUserAvatarEl = document.getElementById('currentUserAvatar');
-    if (currentUserAvatarEl) {
-        currentUserAvatarEl.innerHTML = user.avatarBase64 
-            ? `<img src="${user.avatarBase64}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` 
-            : `<i class="fa-solid ${escapeHTML(user.avatar || 'fa-user-astronaut')}"></i>`;
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetUid = urlParams.get('uid') || user.uid;
-    const isMyProfile = (targetUid === user.uid);
-
-    const profileHeaderBox = document.getElementById('profileHeaderBox');
-    const userPostsContainer = document.getElementById('userPostsContainer');
-
-    async function loadProfile() {
-        try {
-            if (!targetUid) throw new Error("User ID is missing.");
-
-            const userDoc = await getDoc(doc(db, "users", targetUid));
-            if (!userDoc.exists()) {
-                if (profileHeaderBox) profileHeaderBox.innerHTML = `<h3>User not found.</h3>`;
-                return;
-            }
+        <main class="main-feed">
+            <div class="glass-panel profile-header" id="profileHeaderBox">
+                <div style="text-align:center; padding: 2rem;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+            </div>
             
-            const uData = userDoc.data();
-            const joinDate = uData.createdAt ? new Date(uData.createdAt).toLocaleDateString() : "Unknown Date";
-            const avatarDisplay = uData.avatarBase64 
-                ? `<img src="${uData.avatarBase64}" alt="Avatar">`
-                : `<i class="fa-solid ${escapeHTML(uData.gender === 'Female' ? 'fa-person-dress' : (uData.gender === 'Male' ? 'fa-person' : 'fa-user-astronaut'))}"></i>`;
+            <h3 style="margin-bottom: 1rem; color: white;"><i class="fa-solid fa-clock-rotate-left" style="color: var(--primary);"></i> Post History</h3>
+            <div id="userPostsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
+        </main>
 
-            if (profileHeaderBox) {
-                profileHeaderBox.innerHTML = `
-                    <div class="profile-avatar-large">${avatarDisplay}</div>
-                    <h2 style="color: white; font-size: 2rem; margin-bottom: 0.5rem;">${escapeHTML(uData.nickname)}</h2>
-                    <p style="color: var(--primary); font-size: 0.9rem; margin-bottom: 1rem;"><i class="fa-solid fa-calendar-days"></i> Joined ${joinDate}</p>
-                    <p class="bio-text">"${escapeHTML(uData.bio || 'This user prefers to remain mysterious in the void.')}"</p>
-                    ${isMyProfile ? `<button class="btn-primary" style="margin-top: 1rem; background: transparent; border: 1px solid var(--primary);" onclick="document.getElementById('editProfileModal').classList.add('active')"><i class="fa-solid fa-pen"></i> Edit Profile</button>` : ''}
-                `;
-            }
+        <aside class="sidebar-right">
+            <div class="widget glass-panel">
+                <h3><i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i> Identity Protected</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem; line-height: 1.6;">
+                    Profiles only show Nicknames, Bios, and Avatars. Real names, phone numbers, and emails are strictly hidden.
+                </p>
+            </div>
+        </aside>
+    </div>
 
-            const bioInput = document.getElementById('profileBioInput');
-            if (isMyProfile && bioInput) bioInput.value = uData.bio || "";
+    <!-- Mobile Nav -->
+    <nav class="mobile-nav">
+        <a href="index.html" class="mobile-nav-item"><i class="fa-solid fa-house"></i></a>
+        <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
+        <a href="profile.html" class="mobile-nav-item active"><i class="fa-solid fa-user"></i></a>
+        <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
+    </nav>
 
-            const q = query(collection(db, "posts"), where("authorUid", "==", targetUid));
-            const postSnaps = await getDocs(q);
-            
-            if (userPostsContainer) userPostsContainer.innerHTML = '';
-            
-            if (postSnaps.empty) {
-                if (userPostsContainer) userPostsContainer.innerHTML = `<p style="text-align:center; color:var(--text-muted);">No public posts yet.</p>`;
-            } else {
-                let postsArray = [];
-                postSnaps.forEach(docSnap => {
-                    let p = docSnap.data();
-                    p.id = docSnap.id;
-                    postsArray.push(p);
-                });
+    <!-- Edit Profile Modal -->
+    <div class="modal-overlay" id="editProfileModal">
+        <div class="modal-content glass-panel">
+            <h2 style="color: var(--primary); margin-bottom: 1rem;"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</h2>
+            <form id="editProfileForm">
+                <div class="form-group">
+                    <label>Profile Picture (Max 2MB)</label>
+                    <input type="file" id="profileImageInput" accept="image/png, image/jpeg, image/webp" class="form-control" style="background: rgba(0,0,0,0.3); padding: 0.5rem;">
+                </div>
+                <div class="form-group">
+                    <label>About Me (Bio)</label>
+                    <textarea class="form-control" id="profileBioInput" rows="3" placeholder="Write a short anonymous bio..." maxlength="150"></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn-primary" style="background: transparent; border: 1px solid var(--glass-border);" onclick="document.getElementById('editProfileModal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                postsArray.sort((a, b) => {
-                    const tA = a.createdAt && typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
-                    const tB = b.createdAt && typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
-                    return tB - tA;
-                });
-
-                postsArray.forEach(post => {
-                    if(post.isVoid && post.authorUid !== user.uid) return; 
-                    
-                    const timeStr = post.createdAt && typeof post.createdAt.toDate === 'function' ? new Date(post.createdAt.toDate()).toLocaleString() : "Just now";
-                    if (userPostsContainer) {
-                        userPostsContainer.innerHTML += `
-                            <div class="post-card glass-panel" style="${post.isVoid ? 'background: rgba(0,0,0,0.6);' : ''}">
-                                <div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0.5rem;">${timeStr} ${post.isVoid ? '🕳️ (Void)' : ''}</div>
-                                <p style="color: white; line-height: 1.5;">${escapeHTML(post.content)}</p>
-                                <div style="margin-top: 1rem; color: var(--primary); font-size: 0.85rem;"><i class="fa-solid fa-heart"></i> ${post.likes || 0} Likes</div>
-                            </div>
-                        `;
-                    }
-                });
-            }
-        } catch(e) { 
-            console.error(e); 
-            if (profileHeaderBox) profileHeaderBox.innerHTML = `<p style="color:var(--danger); font-size:1.2rem; font-weight:bold;">CRASH: ${escapeHTML(e.message)}</p>`; 
-        }
-    }
-
-    loadProfile();
-
-    function compressImageToBase64(file, callback) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = event => {
-            const img = new Image();
-            img.src = event.target.result;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const MAX_SIZE = 150; 
-                let width = img.width; let height = img.height;
-                if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
-                else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
-                canvas.width = width; canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                callback(canvas.toDataURL('image/jpeg', 0.7));
-            };
-        };
-    }
-
-    const editProfileForm = document.getElementById('editProfileForm');
-    if (editProfileForm) {
-        editProfileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('saveProfileBtn');
-            btn.disabled = true; btn.textContent = "Saving...";
-
-            try {
-                let updateData = { bio: document.getElementById('profileBioInput').value };
-                const fileInput = document.getElementById('profileImageInput');
-                
-                if (fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    compressImageToBase64(file, async (base64String) => {
-                        updateData.avatarBase64 = base64String;
-                        await updateDoc(doc(db, "users", user.uid), updateData);
-                        
-                        let lData = getCurrentUser();
-                        lData.bio = updateData.bio;
-                        lData.avatarBase64 = base64String;
-                        localStorage.setItem('depressDoomerUser', JSON.stringify(lData));
-                        
-                        document.getElementById('editProfileModal').classList.remove('active');
-                        loadProfile(); 
-                        btn.disabled = false; btn.textContent = "Save Changes";
-                    });
-                } else {
-                    await updateDoc(doc(db, "users", user.uid), updateData);
-                    let lData = getCurrentUser();
-                    lData.bio = updateData.bio;
-                    localStorage.setItem('depressDoomerUser', JSON.stringify(lData));
-                    
-                    document.getElementById('editProfileModal').classList.remove('active');
-                    loadProfile(); 
-                    btn.disabled = false; btn.textContent = "Save Changes";
-                }
-            } catch(err) {
-                alert("Error updating profile: " + err.message);
-                btn.disabled = false; btn.textContent = "Save Changes";
-            }
-        });
-    }
-}
+    <script type="module" src="js/profile.js"></script>
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        const doLogout = async () => { await signOut(auth); localStorage.removeItem('depressDoomerUser'); window.location.href = "login.html"; };
+        document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+        document.getElementById('logoutBtnMobile')?.addEventListener('click', doLogout);
+    </script>
+</body>
+</html>
