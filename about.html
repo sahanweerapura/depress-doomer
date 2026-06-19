@@ -9,9 +9,18 @@
     <style>
         @media (max-width: 768px) { .desktop-only { display: none !important; } }
         .about-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); padding: 2rem; border-radius: 12px; margin-bottom: 1.5rem; transition: transform 0.3s ease; }
-        .about-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+        .about-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.2); }
         .about-card h3 { color: white; margin-bottom: 1rem; font-size: 1.4rem; }
         .about-card p { color: var(--text-muted); line-height: 1.8; font-size: 1.05rem; }
+        
+        /* Special Founder Card Style */
+        .founder-card { background: linear-gradient(145deg, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%); border: 1px solid var(--primary); border-left: 4px solid var(--primary); padding: 2rem; border-radius: 12px; margin-bottom: 1.5rem; }
+        .founder-card h3 { color: var(--primary); margin-bottom: 1rem; font-size: 1.4rem; }
+        .founder-card p { color: #e7e9ea; line-height: 1.8; font-size: 1.05rem; font-style: italic; }
+        .founder-name { display: block; margin-top: 1.5rem; color: white; font-weight: bold; font-size: 1.1rem; text-align: right; }
+
+        /* Banner Image Style */
+        .aesthetic-banner { width: 100%; height: 200px; border-radius: 12px; object-fit: cover; margin-bottom: 2rem; opacity: 0.8; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -45,7 +54,7 @@
         </aside>
 
         <main class="main-feed">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;" class="desktop-only">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;" class="desktop-only">
                 <h2 style="font-weight: 800; font-size: 1.8rem;" data-i18n="aboutPage.pageTitle">About The Haven</h2>
                 <select class="form-control" id="langSwitcher" style="width: auto; padding: 0.5rem;">
                     <option value="en">English</option>
@@ -53,14 +62,22 @@
                 </select>
             </div>
 
-            <div class="about-card glass-panel" style="background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.3);">
+            <!-- Aesthetic Calming Rain GIF Banner -->
+            <img src="https://i.pinimg.com/originals/7b/09/a5/7b09a5c889a7df64bb0db656c026042a.gif" alt="Calming Rain" class="aesthetic-banner">
+
+            <div class="about-card glass-panel" style="border-left: 4px solid var(--accent);">
                 <h3 data-i18n="aboutPage.introTitle">A Sanctuary for Your Mind 🌌</h3>
                 <p data-i18n="aboutPage.introText">We created Depress Doomer because sometimes the weight of the world is too heavy to carry alone. This is a safe haven where you can release your darkest thoughts, express your hidden pain, and connect with others who truly understand, all without the fear of judgment or exposure.</p>
             </div>
 
+            <div class="about-card glass-panel" style="border-left: 4px solid #ef4444;">
+                <h3 data-i18n="aboutPage.mentalHealthTitle">Your Pain is Valid 🖤</h3>
+                <p data-i18n="aboutPage.mentalHealthText">Mental health struggles are not a sign of weakness; they are a sign that you have been carrying a heavy burden for far too long. It is completely okay to not be okay. Here, you do not have to pretend. Breathe. Speak your truth. Healing takes time, and we are here to walk that path with you.</p>
+            </div>
+
             <div class="about-card glass-panel" style="border-left: 4px solid #6b7280;">
                 <h3 data-i18n="aboutPage.voidTitle">The Void 🕳️</h3>
-                <p data-i18n="aboutPage.voidText">Not every thought needs a reply or advice. Sometimes, you just need to scream into the abyss to let the pain out. 'The Void' is a special feature where replies are completely disabled. After 24 hours, your message naturally fades away from the public eye. It is your personal space to let go and breathe.</p>
+                <p data-i18n="aboutPage.voidText">Not every thought needs a reply or advice. When you post to The Void, your message will be visible on the public feed for 24 hours, but replies are completely disabled. It is a way to scream into the abyss and be heard by the universe without anyone interrupting or judging you. After 24 hours, it naturally fades away from the public eye. It is your personal space to let go and breathe.</p>
             </div>
 
             <div class="about-card glass-panel" style="border-left: 4px solid var(--success);">
@@ -68,9 +85,11 @@
                 <p data-i18n="aboutPage.anonText">Your identity is sacred here. We only collect your real details internally to keep the platform safe from bots and bad actors. To the community, you are known only by your chosen Nickname and Avatar. Your secrets are safe with us.</p>
             </div>
 
-            <div class="about-card glass-panel" style="border-left: 4px solid var(--accent);">
-                <h3 data-i18n="aboutPage.communityTitle">You Are Not Alone 🤝</h3>
-                <p data-i18n="aboutPage.communityText">Whether you use the Mood Check-in to track your feelings, post on the main feed to find support, or jump into the Live Chat to connect instantly, remember: no matter how dark it gets, there are people here who care.</p>
+            <!-- Founder Message -->
+            <div class="founder-card">
+                <h3 data-i18n="aboutPage.founderTitle">A Message from the Founder ✍️</h3>
+                <p data-i18n="aboutPage.founderText">I built Depress Doomer because I have been in that dark place where reaching out felt impossible. After facing a bitter, judgmental experience while seeking free counseling, I knew I had to create a space where people could speak without fear. My ultimate goal is to bring professional counseling here, but for now, this is your safe haven. You are never alone.</p>
+                <span class="founder-name" data-i18n="aboutPage.founderName">- Sahan Weerapura</span>
             </div>
         </main>
 
@@ -92,7 +111,7 @@
         <a href="profile.html" class="mobile-nav-item"><i class="fa-solid fa-user"></i></a>
     </nav>
 
-    <script type="module" src="js/i18n.js"></script>
+    <script type="module" src="js/i18n.js?v=2"></script>
     <script type="module">
         import { auth } from './js/firebase-config.js';
         import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
