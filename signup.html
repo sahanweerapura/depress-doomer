@@ -3,74 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup - Depress Doomer</title>
+    <title>Sign Up - Depress Doomer</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .terms-box { background: rgba(0,0,0,0.3); border-left: 3px solid var(--accent); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; color: #d1d5db; line-height: 1.5; }
+    </style>
 </head>
-<body>
+<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem;">
     <div class="blob blob-primary"></div>
     <div class="blob blob-accent"></div>
 
-    <div class="auth-wrapper">
-        <div class="auth-box glass-panel" style="max-width: 550px;">
-            <h2 style="font-size: 2rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i class="fa-solid fa-user-secret" style="color: var(--primary-color);"></i>
-                Depress Doomer
-            </h2>
-            <p style="color: var(--text-muted); margin-bottom: 1.5rem;" data-i18n="auth.signupTitle">Join the Community</p>
-            
-            <div class="alert-warning" style="margin-bottom: 2rem;">
-                <strong><i class="fa-solid fa-lock"></i> <span data-i18n="auth.privacyDisclaimerTitle">Privacy Guarantee:</span></strong><br>
-                <span data-i18n="auth.privacyDisclaimer" style="font-size: 0.85rem; color: #e7e9ea; margin-top: 0.5rem; display: block;">Your real identity (Name, Email, Phone, Age) is strictly collected to prevent spam and for internal identity verification. It will NEVER be shared publicly. You will post and chat completely anonymously using a Nickname.</span>
-            </div>
-
-            <form id="signupForm">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div class="form-group">
-                        <label data-i18n="auth.realName">Real Full Name</label>
-                        <input type="text" class="form-control" id="realName" required>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="auth.email">Email Address</label>
-                        <input type="email" class="form-control" id="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="auth.phone">Contact Number</label>
-                        <input type="tel" class="form-control" id="phone" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Gender</label>
-                        <select class="form-control" id="gender" required>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label data-i18n="auth.age">Age</label>
-                        <input type="number" class="form-control" id="age" min="13" max="100" required>
-                    </div>
-                </div>
-
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
-                
-                <div class="form-group">
-                    <label style="color: var(--primary-color);" data-i18n="auth.nickname">Public Nickname (What others see)</label>
-                    <input type="text" class="form-control" id="nickname" required>
-                </div>
-                <div class="form-group">
-                    <label data-i18n="auth.password">Password</label>
-                    <input type="password" class="form-control" id="password" required>
-                </div>
-                
-                <button type="submit" class="btn-block btn-primary-auth" style="background-color: var(--primary-color); color: white;" data-i18n="auth.signupBtn">Create Anonymous Account</button>
-            </form>
-
-            <div style="margin-top: 2rem; text-align: center; font-size: 0.95rem;">
-                <span style="color: var(--text-muted);" data-i18n="auth.haveAccount">Already have an account?</span> 
-                <a href="login.html" style="color: var(--primary-color); font-weight: 600;" data-i18n="auth.loginBtn">Login</a>
-            </div>
+    <div class="auth-wrapper glass-panel" style="width: 100%; max-width: 500px; padding: 2.5rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <i class="fa-solid fa-moon fa-3x" style="color: var(--primary); margin-bottom: 1rem;"></i>
+            <h2 style="font-weight: 800; font-size: 1.8rem;" data-i18n="auth.signupTitle">Join The Haven</h2>
+            <p style="color: var(--text-muted); margin-top: 0.5rem;" data-i18n="auth.privacyDisclaimer">Your identity remains completely hidden from the public.</p>
         </div>
+
+        <div class="terms-box">
+            <strong style="color: white; display: block; margin-bottom: 0.5rem;"><i class="fa-solid fa-shield-halved"></i> Why we collect this data:</strong>
+            We collect your real name and phone number strictly to keep our community safe from spam bots, trolls, and malicious actors. <b>Your real details are never shown to anyone.</b> The community will only ever see your chosen Nickname. 
+            <br><br>
+            <strong style="color: var(--danger);">Platform Rules:</strong> No bullying, no harassment, and no sharing of personal identifying information in the public feed.
+        </div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label data-i18n="auth.realName">Real Full Name</label>
+                <input type="text" class="form-control" id="realName" required>
+            </div>
+            <div class="form-group" style="display: flex; gap: 1rem;">
+                <div style="flex: 1;">
+                    <label data-i18n="auth.age">Age</label>
+                    <input type="number" class="form-control" id="age" min="13" max="100" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Gender</label>
+                    <select class="form-control" id="gender" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label data-i18n="auth.phone">Contact Number</label>
+                <input type="tel" class="form-control" id="phone" required>
+            </div>
+            <div class="form-group">
+                <label data-i18n="auth.nickname">Public Nickname (No Spaces)</label>
+                <input type="text" class="form-control" id="nickname" required>
+            </div>
+            <div class="form-group">
+                <label data-i18n="auth.email">Email Address</label>
+                <input type="email" class="form-control" id="email" required>
+            </div>
+            <div class="form-group">
+                <label data-i18n="auth.password">Password</label>
+                <input type="password" class="form-control" id="password" required minlength="6">
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: flex-start; gap: 0.5rem; margin-top: 1rem;">
+                <input type="checkbox" id="agreeTerms" required style="margin-top: 4px; width: 18px; height: 18px; accent-color: var(--primary);">
+                <label for="agreeTerms" style="font-size: 0.85rem; color: #e7e9ea; cursor: pointer;">
+                    I agree to the rules of The Haven. I will not bully or harass others. I understand my account can be permanently deleted by admins if I violate these terms.
+                </label>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem;" data-i18n="auth.signupBtn">Create Anonymous Account</button>
+        </form>
+        
+        <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem;">
+            <span style="color: var(--text-muted);" data-i18n="auth.haveAccount">Already have an account?</span> <a href="login.html" style="color: var(--primary); font-weight: bold; text-decoration: none;" data-i18n="auth.loginBtn">Login</a>
+        </p>
     </div>
 
     <script type="module" src="js/i18n.js"></script>
