@@ -62,7 +62,7 @@ const translations = {
             anonTitle: "Absolute Anonymity 🛡️",
             anonText: "Your identity is sacred here. We only collect your real details internally to keep the platform safe from bots and bad actors. To the community, you are known only by your chosen Nickname and Avatar. Your secrets are safe with us.",
             founderTitle: "A Message from the Founder ✍️",
-            founderText: "I built Depress Doomer because I have been in that dark place where reaching out felt impossible. After facing a bitter, judgmental experience while seeking free counseling, I knew I had to create a space where people could speak without fear. My ultimate goal is to bring professional counseling here, but for now, this is your safe haven. You are never alone.",
+            founderText: "I built Depress Doomer with a single vision: to ensure that no one ever has to face their darkest moments alone. In a world that often demands perfection, this platform is your sanctuary to be real, to be heard, and to heal without judgment. My ultimate goal is to evolve this space into a comprehensive support system with professional counseling. Until then, let us stand together, support one another, and build a community where empathy leads the way. You are stronger than you know, and you belong here.",
             founderName: "- Sahan Weerapura"
         }
     },
@@ -128,8 +128,8 @@ const translations = {
             anonTitle: "සම්පූර්ණ නිර්නාමිකභාවය 🛡️",
             anonText: "ඔබගේ අනන්‍යතාවය මෙහි අතිශයින්ම සුරක්ෂිතයි. ඔබගේ සැබෑ තොරතුරු අප ලබාගන්නේ වේදිකාවේ ආරක්ෂාව තහවුරු කිරීමට සහ ව්‍යාජ ගිණුම් නැවැත්වීමට පමණි. ප්‍රජාවට ඔබව පෙනෙන්නේ ඔබගේ අන්වර්ථ නාමයෙන් (Nickname) පමණි. ඔබගේ රහස් අප සමඟ සුරක්ෂිතයි.",
             founderTitle: "නිර්මාතෘගෙන් පණිවිඩයක් ✍️",
-            founderText: "මම Depress Doomer නිර්මාණය කළේ, කිසිවෙකුටත් කියන්න බැරි තරම් අඳුරු තැන්වල මමත් ඉඳලා තියෙන නිසයි. මටත් උපදේශනයක් ගන්න ගිහින් අමිහිරි අත්දැකීමකට මුහුණ දෙන්න වුණා. ඒ නිසා තමයි කිසිම විනිශ්චයකින් තොරව කතා කරන්න පුළුවන් තැනක් හදන්න මම තීරණය කළේ. ඉදිරියේදී වෘත්තීය උපදේශන සේවාවක් මේකට එකතු කිරීම මගේ අරමුණයි. එතකන් මේක ඔබේ සුරක්ෂිත තැනයි. ඔබ තනිවී නැත.",
-            founderName: "- සහන් වීරපුර (Sahan Weerapura)"
+            founderText: "Depress Doomer නිර්මාණය කිරීමේ මගේ එකම අරමුණ වුණේ, කිසිවෙකුටත් තම ජීවිතයේ අඳුරුතම කාලයන් තනිවම පසු කිරීමට ඉඩ නොතැබීමයි. නිරන්තරයෙන්ම පරිපූර්ණත්වය බලාපොරොත්තු වන සමාජයක, කිසිදු විනිශ්චයකින් තොරව ඔබේ සැබෑ හැඟීම් ප්‍රකාශ කිරීමටත්, සහනයක් සෙවීමටත් මෙය ඔබට සුරක්ෂිත ස්ථානයකි. මගේ අවසාන ඉලක්කය වන්නේ ඉදිරියේදී වෘත්තීය උපදේශන සේවාවන් සමඟින් මෙය සම්පූර්ණ සහායක පද්ධතියක් බවට පත් කිරීමයි. එතෙක්, අපි එකිනෙකාට ශක්තියක් වෙමු, එකිනෙකාට උදව් කරමු. ඔබ හිතනවාට වඩා ඔබ ශක්තිමත්, ඒ වගේම ඔබ තනි වී නැත.",
+            founderName: "- සහන් වීරපුර"
         }
     }
 };
