@@ -157,7 +157,10 @@ if (createPostForm && postsContainer) {
                 <div class="post-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; align-items: center;">
                     <button class="action-btn like ${hasLiked ? 'active' : ''}" onclick="window.toggleLike('${postId}', ${hasLiked})"><i class="${hasLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> <span id="like-count-${postId}">${likesCount}</span></button>
                     <button class="action-btn report" onclick="window.openReportModal('${postId}', 'post')"><i class="fa-regular fa-flag"></i> Report</button>
+                    
+                    <!-- USER'S OWN POST BUTTONS (RESOLVED + DELETE) -->
                     ${post.authorUid === user.uid ? `<button class="action-btn" onclick="window.resolvePost('${postId}')" style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> Resolved (Remove)</button>` : ''}
+                    
                     ${post.authorUid === user.uid || isAdmin ? `<button class="action-btn" onclick="window.deletePost('${postId}')" style="color: var(--danger); margin-left: auto;"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
                 </div>
 
@@ -204,7 +207,7 @@ if (createPostForm && postsContainer) {
         else await updateDoc(postRef, { likes: increment(1), likedBy: arrayUnion(user.uid) });
     };
 
-    window.resolvePost = async (postId) => { if(confirm("Are you glad this is resolved? It will be removed permanently.")) await deleteDoc(doc(db, "posts", postId)); };
+    window.resolvePost = async (postId) => { if(confirm("Are you glad this is resolved? It will be removed permanently from the public feed.")) await deleteDoc(doc(db, "posts", postId)); };
     window.deletePost = async (postId) => { if(confirm("Permanently delete this post?")) await deleteDoc(doc(db, "posts", postId)); };
 
     window.submitReply = async (event, postId, postAuthorUid) => {
@@ -279,20 +282,43 @@ if (reportForm) {
     });
 }
 
+// SUPER ADMIN DELETE FUNCTION IS HERE
 const adminData = document.getElementById('adminData');
 if (adminData) {
     if (!user || !user.adminRoles) adminData.innerHTML = "<p>Unauthorized.</p>";
     else {
         window.updateBanStatus = async (userUid, newStatus) => { try { await updateDoc(doc(db, "users", userUid), { banStatus: newStatus }); alert("User ban status updated."); } catch (error) {} };
-        window.deleteUserAdmin = async (userUid) => { if(confirm("SUPER ADMIN ACTION: This permanently destroys the user database record. Continue?")) { try { await deleteDoc(doc(db, "users", userUid)); alert("User permanently removed."); window.loadAdminTab('identities'); } catch(e) { alert("Error deleting: "+e.message); } } };
+        
+        window.deleteUserAdmin = async (userUid) => { 
+            if(confirm("SUPER ADMIN ACTION: This permanently destroys the user database record (They will have to recreate their profile). Continue?")) { 
+                try { 
+                    await deleteDoc(doc(db, "users", userUid)); 
+                    alert("User permanently removed."); 
+                    window.loadAdminTab('identities'); 
+                } catch(e) { 
+                    alert("Error deleting: "+e.message); 
+                } 
+            } 
+        };
+
         window.loadAdminTab = async (tabName) => {
             adminData.innerHTML = '<div style="padding: 2rem; text-align: center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
             try {
                 if (tabName === 'identities') {
                     if (!user.adminRoles.view_identities) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
                     const usersSnapshot = await getDocs(collection(db, "users"));
-                    let html = `<table class="admin-table"><thead><tr><th>Nickname</th><th>Real Name</th><th>Phone</th><th>Gender</th><th>Ban Action</th><th>Delete</th></tr></thead><tbody>`;
-                    usersSnapshot.forEach((docS) => { const u = docS.data(); const uId = docS.id; html += `<tr><td>${escapeHTML(u.nickname)}</td><td class="sensitive-data">${escapeHTML(u.realName || 'N/A')}</td><td class="sensitive-data">${escapeHTML(u.phone || 'N/A')}</td><td>${escapeHTML(u.gender || 'N/A')}</td><td><select onchange="window.updateBanStatus('${uId}', this.value)" style="padding: 0.3rem; background: var(--bg-dark); color: white; border: 1px solid var(--danger);"><option value="none" ${u.banStatus === 'none' || !u.banStatus ? 'selected' : ''}>Active</option><option value="read_only" ${u.banStatus === 'read_only' ? 'selected' : ''}>Read-Only Ban</option><option value="hard" ${u.banStatus === 'hard' ? 'selected' : ''}>HARD BAN</option></select></td><td>${isSuperAdmin ? `<button onclick="window.deleteUserAdmin('${uId}')" style="background:var(--danger); color:white; border:none; padding:0.5rem; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>` : 'N/A'}</td></tr>`; });
+                    let html = `<table class="admin-table"><thead><tr><th>Nickname</th><th>Real Name</th><th>Phone</th><th>Gender</th><th>Ban Action</th><th>Delete User</th></tr></thead><tbody>`;
+                    usersSnapshot.forEach((docS) => { 
+                        const u = docS.data(); const uId = docS.id; 
+                        html += `<tr>
+                            <td>${escapeHTML(u.nickname)}</td>
+                            <td class="sensitive-data">${escapeHTML(u.realName || 'N/A')}</td>
+                            <td class="sensitive-data">${escapeHTML(u.phone || 'N/A')}</td>
+                            <td>${escapeHTML(u.gender || 'N/A')}</td>
+                            <td><select onchange="window.updateBanStatus('${uId}', this.value)" style="padding: 0.3rem; background: var(--bg-dark); color: white; border: 1px solid var(--danger);"><option value="none" ${u.banStatus === 'none' || !u.banStatus ? 'selected' : ''}>Active</option><option value="read_only" ${u.banStatus === 'read_only' ? 'selected' : ''}>Read-Only Ban</option><option value="hard" ${u.banStatus === 'hard' ? 'selected' : ''}>HARD BAN</option></select></td>
+                            <td>${isSuperAdmin ? `<button onclick="window.deleteUserAdmin('${uId}')" style="background:var(--danger); color:white; border:none; padding:0.5rem 1rem; cursor:pointer; font-weight:bold; border-radius:4px;"><i class="fa-solid fa-trash"></i> Delete</button>` : 'N/A'}</td>
+                        </tr>`; 
+                    });
                     adminData.innerHTML = html + "</tbody></table>";
                 } 
                 else if (tabName === 'reports') {
