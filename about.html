@@ -13,14 +13,17 @@
         .about-card h3 { color: white; margin-bottom: 1rem; font-size: 1.4rem; }
         .about-card p { color: var(--text-muted); line-height: 1.8; font-size: 1.05rem; }
         
-        /* Special Founder Card Style */
         .founder-card { background: linear-gradient(145deg, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%); border: 1px solid var(--primary); border-left: 4px solid var(--primary); padding: 2rem; border-radius: 12px; margin-bottom: 1.5rem; }
         .founder-card h3 { color: var(--primary); margin-bottom: 1rem; font-size: 1.4rem; }
         .founder-card p { color: #e7e9ea; line-height: 1.8; font-size: 1.05rem; font-style: italic; }
         .founder-name { display: block; margin-top: 1.5rem; color: white; font-weight: bold; font-size: 1.1rem; text-align: right; }
 
-        /* Banner Image Style */
-        .aesthetic-banner { width: 100%; height: 200px; border-radius: 12px; object-fit: cover; margin-bottom: 2rem; opacity: 0.8; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .aesthetic-banner { width: 100%; height: 200px; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.5); background: linear-gradient(-45deg, #0f172a, #312e81, #4c1d95, #000000); background-size: 400% 400%; animation: gradientBG 10s ease infinite; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 4rem; }
     </style>
 </head>
 <body>
@@ -62,8 +65,10 @@
                 </select>
             </div>
 
-            <!-- Aesthetic Calming Rain GIF Banner -->
-            <img src="https://i.pinimg.com/originals/7b/09/a5/7b09a5c889a7df64bb0db656c026042a.gif" alt="Calming Rain" class="aesthetic-banner">
+            <!-- Unbreakable Animated Gradient Banner -->
+            <div class="aesthetic-banner">
+                <i class="fa-solid fa-cloud-moon-rain"></i>
+            </div>
 
             <div class="about-card glass-panel" style="border-left: 4px solid var(--accent);">
                 <h3 data-i18n="aboutPage.introTitle">A Sanctuary for Your Mind 🌌</h3>
@@ -85,7 +90,6 @@
                 <p data-i18n="aboutPage.anonText">Your identity is sacred here. We only collect your real details internally to keep the platform safe from bots and bad actors. To the community, you are known only by your chosen Nickname and Avatar. Your secrets are safe with us.</p>
             </div>
 
-            <!-- Founder Message -->
             <div class="founder-card">
                 <h3 data-i18n="aboutPage.founderTitle">A Message from the Founder ✍️</h3>
                 <p data-i18n="aboutPage.founderText">I built Depress Doomer with a single vision: to ensure that no one ever has to face their darkest moments alone. In a world that often demands perfection, this platform is your sanctuary to be real, to be heard, and to heal without judgment. My ultimate goal is to evolve this space into a comprehensive support system with professional counseling. Until then, let us stand together, support one another, and build a community where empathy leads the way. You are stronger than you know, and you belong here.</p>
@@ -115,7 +119,6 @@
     <script type="module">
         import { auth } from './js/firebase-config.js';
         import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        
         const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
         if (!user) window.location.href = "login.html";
         else {
@@ -127,7 +130,6 @@
                 currentUserAvatarEl.innerHTML = user.avatarBase64 ? `<img src="${user.avatarBase64}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` : `<i class="fa-solid ${escapeHTML(user.avatar || 'fa-user-astronaut')}"></i>`;
             }
         }
-
         const doLogout = async () => { await signOut(auth); localStorage.removeItem('depressDoomerUser'); window.location.href = "login.html"; };
         document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
     </script>
