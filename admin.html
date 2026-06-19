@@ -7,157 +7,49 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95rem;
-        }
-        .admin-table th, .admin-table td {
-            padding: 1.2rem;
-            text-align: left;
-            border-bottom: 1px solid var(--glass-border);
-        }
-        .admin-table th {
-            color: var(--text-muted);
-            font-weight: 700;
-            background: rgba(255,255,255,0.02);
-        }
-        .sensitive-data {
-            color: #fca5a5;
-            font-weight: 500;
-        }
-        
-        .admin-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--glass-border);
-            padding-bottom: 1rem;
-        }
-        .tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            padding: 0.5rem 1rem;
-            transition: var(--transition);
-            border-radius: var(--radius-sm);
-        }
-        .tab-btn:hover {
-            color: var(--text-main);
-            background: rgba(255,255,255,0.05);
-        }
-        .tab-btn.active {
-            color: var(--primary);
-            background: rgba(99,102,241,0.1);
-        }
+        .admin-nav { display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; }
+        .admin-nav button { background: transparent; border: 1px solid var(--primary); color: white; padding: 0.5rem 1.5rem; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .admin-nav button:hover, .admin-nav button.active { background: rgba(99, 102, 241, 0.2); }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; }
+        .admin-table th, .admin-table td { padding: 1rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e7e9ea; }
+        .admin-table th { background: rgba(99, 102, 241, 0.1); color: var(--primary); font-weight: 600; }
+        .sensitive-data { color: var(--danger); font-family: monospace; }
+        @media (max-width: 768px) { .admin-table { display: block; overflow-x: auto; } }
     </style>
 </head>
 <body>
     <div class="blob blob-primary"></div>
-    <div class="blob blob-accent"></div>
+    <div class="blob blob-danger" style="background: var(--danger); right: 0; bottom: 0;"></div>
 
-    <!-- Mobile Header -->
-    <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
-        <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-user-shield"></i> Dashboard</div>
-    </header>
+    <div class="app-layout" style="display: block; max-width: 1200px; margin: 0 auto; padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 style="color: white;"><i class="fa-solid fa-user-shield" style="color: var(--primary);"></i> Admin Dashboard</h1>
+            <button class="btn-primary" style="background: transparent; border: 1px solid var(--glass-border);" onclick="window.location.href='index.html'"><i class="fa-solid fa-arrow-left"></i> Back to Haven</button>
+        </div>
 
-    <div class="app-layout">
-        <!-- Left Sidebar (Desktop) -->
-        <aside class="sidebar-left glass-panel">
-            <div class="brand-logo" style="cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon" style="color: var(--primary);"></i> Depress Doomer</div>
-            <nav class="nav-links">
-                <a href="index.html" class="nav-item">
-                    <i class="fa-solid fa-house"></i>
-                    <span>Home</span>
-                </a>
-                <a href="chat.html" class="nav-item">
-                    <i class="fa-solid fa-message"></i>
-                    <span>Live Chat</span>
-                </a>
-                <a href="admin.html" class="nav-item active admin-link">
-                    <i class="fa-solid fa-user-shield"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="nav-item" id="logoutBtn">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>Logout</span>
-                </a>
-            </nav>
-            <div class="user-profile-btn">
-                <div class="avatar" id="currentUserAvatar"><i class="fa-solid fa-user-shield"></i></div>
-                <div style="display: flex; flex-direction: column;">
-                    <strong id="currentUserName" style="font-size: 1rem;">Admin</strong>
-                    <span style="color: var(--primary); font-size: 0.85rem;">Moderator</span>
-                </div>
+        <div class="glass-panel" style="min-height: 70vh;">
+            <div class="admin-nav">
+                <button onclick="window.loadAdminTab('identities')" id="tab-identities" class="active"><i class="fa-solid fa-users"></i> User Identities</button>
+                <button onclick="window.loadAdminTab('reports')" id="tab-reports"><i class="fa-solid fa-flag"></i> Content Reports</button>
             </div>
-        </aside>
-
-        <!-- Admin Area Center -->
-        <main class="main-feed" style="grid-column: 2 / -1;">
-            <div class="glass-panel" style="padding: 2rem;">
-                <div class="admin-tabs" id="adminTabs">
-                    <button class="tab-btn active" onclick="switchTab('identities', this)"><i class="fa-solid fa-users-viewfinder"></i> Real Identities Log</button>
-                    <button class="tab-btn" onclick="switchTab('reports', this)"><i class="fa-solid fa-flag"></i> Reports Inbox</button>
-                    <button class="tab-btn" onclick="switchTab('manage_admins', this)" id="manageAdminsTab" style="display: none;"><i class="fa-solid fa-user-gear"></i> Manage Admins</button>
-                </div>
-
-                <div id="adminData" style="overflow-x: auto;">
-                    <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
-                        <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
-                        <p style="margin-top: 1rem;">Loading secure data...</p>
-                    </div>
-                </div>
+            
+            <div id="adminData">
+                <div style="padding: 2rem; text-align: center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i> Loading Data Securely...</div>
             </div>
-        </main>
+        </div>
     </div>
 
-    <!-- Mobile Bottom Navigation -->
-    <nav class="mobile-nav">
-        <a href="index.html" class="mobile-nav-item"><i class="fa-solid fa-house"></i></a>
-        <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
-        <a href="admin.html" class="mobile-nav-item active admin-link"><i class="fa-solid fa-user-shield"></i></a>
-        <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
-    </nav>
-
-    <!-- App Logic -->
+    <script type="module" src="js/app.js"></script>
     <script>
         const user = JSON.parse(localStorage.getItem('depressDoomerUser'));
-        const isSuperAdminEmail = user && user.email === 'mentalistwuwi@gmail.com';
+        if (!user || !user.adminRoles) window.location.href = "index.html";
         
-        if (!user || (!user.adminRoles && !isSuperAdminEmail)) {
-            alert("Unauthorized. Admin access only.");
-            window.location.href = "index.html";
-        } else {
-            const nameEl = document.getElementById('currentUserName');
-            if (nameEl) nameEl.textContent = user.nickname;
-            
-            if (isSuperAdminEmail || (user.adminRoles && user.adminRoles.isSuperAdmin)) {
-                document.getElementById('manageAdminsTab').style.display = 'inline-block';
-            }
-        }
-
-        function switchTab(tabName, btnElement) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-            if (window.loadAdminTab) {
-                window.loadAdminTab(tabName);
-            }
-        }
-    </script>
-    <script type="module" src="js/app.js"></script>
-    <script type="module">
-        import { auth } from './js/firebase-config.js';
-        import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        const doLogout = async () => {
-            await signOut(auth);
-            localStorage.removeItem('depressDoomerUser');
-            window.location.href = "login.html";
-        };
-        document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
-        document.getElementById('logoutBtnMobile')?.addEventListener('click', doLogout);
+        document.getElementById('tab-identities').addEventListener('click', function() {
+            this.classList.add('active'); document.getElementById('tab-reports').classList.remove('active');
+        });
+        document.getElementById('tab-reports').addEventListener('click', function() {
+            this.classList.add('active'); document.getElementById('tab-identities').classList.remove('active');
+        });
     </script>
 </body>
 </html>
