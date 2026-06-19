@@ -5,7 +5,8 @@ const translations = {
             liveChat: "Live Chat",
             login: "Login",
             logout: "Logout",
-            feed: "Home"
+            feed: "Home",
+            aboutNav: "About"
         },
         feed: {
             sharePrompt: "Share what's on your mind...",
@@ -49,6 +50,17 @@ const translations = {
             btn3: "3 - A bit heavy",
             btn4: "4 - Very dark",
             btn5: "5 - Complete Storm"
+        },
+        aboutPage: {
+            pageTitle: "About The Haven",
+            introTitle: "A Sanctuary for Your Mind 🌌",
+            introText: "We created Depress Doomer because sometimes the weight of the world is too heavy to carry alone. This is a safe haven where you can release your darkest thoughts, express your hidden pain, and connect with others who truly understand, all without the fear of judgment or exposure.",
+            voidTitle: "The Void 🕳️",
+            voidText: "Not every thought needs a reply or advice. Sometimes, you just need to scream into the abyss to let the pain out. 'The Void' is a special feature where replies are completely disabled. After 24 hours, your message naturally fades away from the public eye. It is your personal space to let go and breathe.",
+            anonTitle: "Absolute Anonymity 🛡️",
+            anonText: "Your identity is sacred here. We only collect your real details internally to keep the platform safe from bots and bad actors. To the community, you are known only by your chosen Nickname and Avatar. Your secrets are safe with us.",
+            communityTitle: "You Are Not Alone 🤝",
+            communityText: "Whether you use the Mood Check-in to track your feelings, post on the main feed to find support, or jump into the Live Chat to connect instantly, remember: no matter how dark it gets, there are people here who care."
         }
     },
     si: {
@@ -56,7 +68,8 @@ const translations = {
             liveChat: "සජීවී චැට්",
             login: "ඇතුල් වන්න",
             logout: "පිටවෙන්න",
-            feed: "මුල් පිටුව"
+            feed: "මුල් පිටුව",
+            aboutNav: "අප ගැන"
         },
         feed: {
             sharePrompt: "ඔබගේ සිතුවිලි බෙදාගන්න...",
@@ -100,6 +113,17 @@ const translations = {
             btn3: "3 - ටිකක් බරයි",
             btn4: "4 - ගොඩක් අඳුරුයි",
             btn5: "5 - සම්පූර්ණයෙන්ම කඩා වැටිලා"
+        },
+        aboutPage: {
+            pageTitle: "අපගේ අරමුණ",
+            introTitle: "ඔබේ මනසට නිදහසක් 🌌",
+            introText: "අප Depress Doomer නිර්මාණය කළේ, සමහර විට ලෝකයේ බර තනියම දරාගැනීම ඉතා අසීරු නිසාවෙනි. මෙය ඔබේ අඳුරුතම සිතුවිලි සහ වේදනාවන් කිසිදු විනිශ්චයකින් තොරව පිටකළ හැකි, ඔබව තේරුම් ගන්නා අයගෙන් සමන්විත සුරක්ෂිත ස්ථානයකි.",
+            voidTitle: "අඳුරු කුටිය (The Void) 🕳️",
+            voidText: "සෑම සිතුවිල්ලකටම පිළිතුරක් හෝ උපදෙසක් අවශ්‍ය නැත. සමහර විට අපට අවශ්‍ය වන්නේ වේදනාව පිට කිරීමට නිදහසේ කෑගැසීමටයි. 'Void' යනු ඔබට පිළිතුරු ලැබීම සම්පූර්ණයෙන්ම අක්‍රිය කරන විශේෂ පහසුකමකි. පැය 24කට පසු එය ප්‍රසිද්ධියෙන් ස්වභාවිකවම මැකී යයි. එය ඔබේ සිත නිදහස් කරගැනීමේ පෞද්ගලික අවකාශයයි.",
+            anonTitle: "සම්පූර්ණ නිර්නාමිකභාවය 🛡️",
+            anonText: "ඔබගේ අනන්‍යතාවය මෙහි අතිශයින්ම සුරක්ෂිතයි. ඔබගේ සැබෑ තොරතුරු අප ලබාගන්නේ වේදිකාවේ ආරක්ෂාව තහවුරු කිරීමට සහ ව්‍යාජ ගිණුම් නැවැත්වීමට පමණි. ප්‍රජාවට ඔබව පෙනෙන්නේ ඔබගේ අන්වර්ථ නාමයෙන් (Nickname) පමණි. ඔබගේ රහස් අප සමඟ සුරක්ෂිතයි.",
+            communityTitle: "ඔබ තනි වී නැත 🤝",
+            communityText: "ඔබේ මනෝභාවය සටහන් කිරීම, ප්‍රධාන පිටුවේ අදහස් බෙදාගැනීම හෝ සජීවී චැට් එකට සම්බන්ධ වීම හරහා ඔබට සහාය විය හැකි අය මෙහි සිටින බව කවදාවත් අමතක කරන්න එපා. කොතරම් අඳුරු වුවත්, ඔබ තනි වී නැත."
         }
     }
 };
@@ -111,30 +135,23 @@ function applyTranslations() {
         const keyPath = el.getAttribute('data-i18n');
         const keys = keyPath.split('.');
         let translation = translations[currentLang];
-        for (const k of keys) {
-            translation = translation[k];
-        }
+        for (const k of keys) { translation = translation ? translation[k] : null; }
         if (translation) {
             if (el.querySelector('i')) {
                 const icon = el.querySelector('i').outerHTML;
-                el.innerHTML = translation + ' ' + icon;
+                el.innerHTML = icon + ' ' + translation; 
             } else {
                 el.textContent = translation;
             }
         }
     });
     
-    // Specifically handle placeholders for inputs/textareas
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const keyPath = el.getAttribute('data-i18n-placeholder');
         const keys = keyPath.split('.');
         let translation = translations[currentLang];
-        for (const k of keys) {
-            translation = translation[k];
-        }
-        if (translation) {
-            el.placeholder = translation;
-        }
+        for (const k of keys) { translation = translation ? translation[k] : null; }
+        if (translation) el.placeholder = translation;
     });
 }
 
@@ -145,20 +162,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (switcher) {
         switcher.value = currentLang;
         switcher.addEventListener('change', (e) => {
-            currentLang = e.target.value;
-            localStorage.setItem('lang', currentLang);
-            if (mobileSwitcher) mobileSwitcher.value = currentLang;
-            applyTranslations();
+            currentLang = e.target.value; localStorage.setItem('lang', currentLang);
+            if (mobileSwitcher) mobileSwitcher.value = currentLang; applyTranslations();
         });
     }
     
     if (mobileSwitcher) {
         mobileSwitcher.value = currentLang;
         mobileSwitcher.addEventListener('change', (e) => {
-            currentLang = e.target.value;
-            localStorage.setItem('lang', currentLang);
-            if (switcher) switcher.value = currentLang;
-            applyTranslations();
+            currentLang = e.target.value; localStorage.setItem('lang', currentLang);
+            if (switcher) switcher.value = currentLang; applyTranslations();
         });
     }
     applyTranslations();
