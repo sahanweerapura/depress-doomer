@@ -14,7 +14,6 @@ const isReadOnly = user && user.banStatus === "read_only";
 
 function escapeHTML(str) { return !str ? '' : str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 
-// Global Setup
 const nameEl = document.getElementById('currentUserName');
 if (nameEl && user) nameEl.textContent = user.nickname;
 const currentUserAvatarEl = document.getElementById('currentUserAvatar');
@@ -23,7 +22,6 @@ if (currentUserAvatarEl && user) {
 }
 if (user && user.adminRoles && typeof window.injectAdminLink === 'function') window.injectAdminLink();
 
-// MOOD CHECK-IN LOGIC
 if (user && !isReadOnly && window.location.pathname.includes('index.html')) {
     const todayStr = new Date().toDateString();
     getDoc(doc(db, "users", user.uid)).then(docSnap => {
@@ -33,12 +31,13 @@ if (user && !isReadOnly && window.location.pathname.includes('index.html')) {
         }
     });
     window.logMood = async (level) => {
-        try { await updateDoc(doc(db, "users", user.uid), { lastMoodLog: new Date().toDateString(), [`moodHistory.${Date.now()}`]: level }); document.getElementById('moodModal').classList.remove('active'); } 
-        catch (error) { document.getElementById('moodModal').classList.remove('active'); }
+        try { 
+            await updateDoc(doc(db, "users", user.uid), { lastMoodLog: new Date().toDateString(), [`moodHistory.${Date.now()}`]: level }); 
+            document.getElementById('moodModal').classList.remove('active'); 
+        } catch (error) { document.getElementById('moodModal').classList.remove('active'); }
     };
 }
 
-// MENTION AUTO-SUGGEST
 const mentionStyle = document.createElement('style');
 mentionStyle.innerHTML = `.mention-suggestions { background: #1a1a2e; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.8); overflow-y: auto; z-index: 1000; } .mention-suggestions::-webkit-scrollbar { width: 5px; } .mention-suggestions::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 5px; } .mention-item { padding: 0.8rem 1rem; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); color: #e7e9ea; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; } .mention-item:hover { background: rgba(99,102,241,0.2); color: white; } .mention-item:last-child { border-bottom: none; }`;
 document.head.appendChild(mentionStyle);
@@ -66,7 +65,6 @@ async function handleMentionInput(inputElement, suggestionBoxElement) {
     } else suggestionBoxElement.style.display = 'none';
 }
 
-// NOTIFICATIONS & COUNTER
 const totalUserCountEl = document.getElementById('totalUserCount');
 if (totalUserCountEl) { getCountFromServer(collection(db, "users")).then(s => totalUserCountEl.textContent = s.data().count).catch(()=>totalUserCountEl.textContent = "?"); }
 const notifBadge = document.getElementById('notifBadge');
@@ -98,7 +96,6 @@ const crisisKeywords = ["suicide", "kill myself", "end it", "want to die", "give
 function checkForCrisis(text) { return crisisKeywords.some(k => text.toLowerCase().includes(k)); }
 const crisisBotReply = { content: "You are not alone. Please call 1333 for free, confidential, 24/7 crisis support in Sri Lanka. We want you here.", authorUid: "system_bot", authorNickname: "Haven Support Bot 🛡️", createdAt: new Date().toISOString() };
 
-// FEED LOGIC
 const createPostForm = document.getElementById('createPostForm');
 const postsContainer = document.getElementById('postsContainer');
 
@@ -120,7 +117,6 @@ if (createPostForm && postsContainer) {
             const likesCount = post.likes || 0;
             const hasLiked = post.likedBy && user ? post.likedBy.includes(user.uid) : false;
             
-            // USE BASE 64 AVATAR
             const avatarHtml = post.authorAvatarBase64 
                 ? `<img src="${post.authorAvatarBase64}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` 
                 : `<i class="fa-solid ${escapeHTML(post.authorAvatar || 'fa-user-astronaut')}"></i>`;
@@ -158,9 +154,10 @@ if (createPostForm && postsContainer) {
                 </div>
                 <div class="post-content"><p style="font-size: 1.05rem; line-height: 1.6; ${post.isVoid ? 'color: #9ca3af; font-style: italic;' : ''}">${escapeHTML(post.content)}</p></div>
                 
-                <div class="post-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+                <div class="post-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; align-items: center;">
                     <button class="action-btn like ${hasLiked ? 'active' : ''}" onclick="window.toggleLike('${postId}', ${hasLiked})"><i class="${hasLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> <span id="like-count-${postId}">${likesCount}</span></button>
                     <button class="action-btn report" onclick="window.openReportModal('${postId}', 'post')"><i class="fa-regular fa-flag"></i> Report</button>
+                    ${post.authorUid === user.uid ? `<button class="action-btn" onclick="window.resolvePost('${postId}')" style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> Resolved (Remove)</button>` : ''}
                     ${post.authorUid === user.uid || isAdmin ? `<button class="action-btn" onclick="window.deletePost('${postId}')" style="color: var(--danger); margin-left: auto;"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
                 </div>
 
@@ -207,6 +204,7 @@ if (createPostForm && postsContainer) {
         else await updateDoc(postRef, { likes: increment(1), likedBy: arrayUnion(user.uid) });
     };
 
+    window.resolvePost = async (postId) => { if(confirm("Are you glad this is resolved? It will be removed permanently.")) await deleteDoc(doc(db, "posts", postId)); };
     window.deletePost = async (postId) => { if(confirm("Permanently delete this post?")) await deleteDoc(doc(db, "posts", postId)); };
 
     window.submitReply = async (event, postId, postAuthorUid) => {
@@ -232,7 +230,6 @@ if (createPostForm && postsContainer) {
     };
 }
 
-// CHAT & MODERATION
 const chatForm = document.getElementById('chatForm'); const chatBox = document.getElementById('chatBox');
 if (chatForm && chatBox) {
     if (isReadOnly) {
@@ -287,26 +284,25 @@ if (adminData) {
     if (!user || !user.adminRoles) adminData.innerHTML = "<p>Unauthorized.</p>";
     else {
         window.updateBanStatus = async (userUid, newStatus) => { try { await updateDoc(doc(db, "users", userUid), { banStatus: newStatus }); alert("User ban status updated."); } catch (error) {} };
+        window.deleteUserAdmin = async (userUid) => { if(confirm("SUPER ADMIN ACTION: This permanently destroys the user database record. Continue?")) { try { await deleteDoc(doc(db, "users", userUid)); alert("User permanently removed."); window.loadAdminTab('identities'); } catch(e) { alert("Error deleting: "+e.message); } } };
         window.loadAdminTab = async (tabName) => {
             adminData.innerHTML = '<div style="padding: 2rem; text-align: center;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>';
-            if (tabName === 'identities') {
-                if (!user.adminRoles.view_identities) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
-                try {
+            try {
+                if (tabName === 'identities') {
+                    if (!user.adminRoles.view_identities) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
                     const usersSnapshot = await getDocs(collection(db, "users"));
-                    let html = `<table class="admin-table"><thead><tr><th>Nickname</th><th>Real Name</th><th>Phone</th><th>Gender</th><th>Ban Action</th></tr></thead><tbody>`;
-                    usersSnapshot.forEach((docS) => { const u = docS.data(); const uId = docS.id; html += `<tr><td>${escapeHTML(u.nickname)}</td><td class="sensitive-data">${escapeHTML(u.realName || 'N/A')}</td><td class="sensitive-data">${escapeHTML(u.phone || 'N/A')}</td><td>${escapeHTML(u.gender || 'N/A')}</td><td><select onchange="window.updateBanStatus('${uId}', this.value)" style="padding: 0.3rem; background: var(--bg-dark); color: white; border: 1px solid var(--danger);"><option value="none" ${u.banStatus === 'none' || !u.banStatus ? 'selected' : ''}>Active</option><option value="read_only" ${u.banStatus === 'read_only' ? 'selected' : ''}>Read-Only Ban</option><option value="hard" ${u.banStatus === 'hard' ? 'selected' : ''}>HARD BAN</option></select></td></tr>`; });
+                    let html = `<table class="admin-table"><thead><tr><th>Nickname</th><th>Real Name</th><th>Phone</th><th>Gender</th><th>Ban Action</th><th>Delete</th></tr></thead><tbody>`;
+                    usersSnapshot.forEach((docS) => { const u = docS.data(); const uId = docS.id; html += `<tr><td>${escapeHTML(u.nickname)}</td><td class="sensitive-data">${escapeHTML(u.realName || 'N/A')}</td><td class="sensitive-data">${escapeHTML(u.phone || 'N/A')}</td><td>${escapeHTML(u.gender || 'N/A')}</td><td><select onchange="window.updateBanStatus('${uId}', this.value)" style="padding: 0.3rem; background: var(--bg-dark); color: white; border: 1px solid var(--danger);"><option value="none" ${u.banStatus === 'none' || !u.banStatus ? 'selected' : ''}>Active</option><option value="read_only" ${u.banStatus === 'read_only' ? 'selected' : ''}>Read-Only Ban</option><option value="hard" ${u.banStatus === 'hard' ? 'selected' : ''}>HARD BAN</option></select></td><td>${isSuperAdmin ? `<button onclick="window.deleteUserAdmin('${uId}')" style="background:var(--danger); color:white; border:none; padding:0.5rem; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>` : 'N/A'}</td></tr>`; });
                     adminData.innerHTML = html + "</tbody></table>";
-                } catch (e) { adminData.innerHTML = `<p>Error.</p>`; }
-            } 
-            else if (tabName === 'reports') {
-                if (!user.adminRoles.view_reports) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
-                try {
+                } 
+                else if (tabName === 'reports') {
+                    if (!user.adminRoles.view_reports) return adminData.innerHTML = '<p style="color:var(--danger);">Unauthorized</p>';
                     const repSnap = await getDocs(query(collection(db, "reports"), orderBy("createdAt", "desc")));
                     let html = `<table class="admin-table"><thead><tr><th>Target</th><th>Reason</th><th>Context</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
                     repSnap.forEach(d => { const r = d.data(); html += `<tr><td>${escapeHTML(r.targetType)}</td><td>${escapeHTML(r.reason)}</td><td>${escapeHTML(r.context)}</td><td style="color: ${r.status === 'Pending' ? 'var(--accent)' : 'var(--success)'};">${escapeHTML(r.status)}</td><td>${r.status === 'Pending' ? `<button onclick="window.resolveReport('${d.id}')" style="background:var(--success); color:white; border:none; padding:0.5rem; border-radius:4px; cursor:pointer;">Resolve</button>` : 'Resolved'}</td></tr>`; });
                     adminData.innerHTML = html + "</tbody></table>";
-                } catch (e) { adminData.innerHTML = `<p>Error.</p>`; }
-            }
+                }
+            } catch(e) { adminData.innerHTML = `<p style="color:var(--danger); font-weight:bold;">Admin Crash: ${escapeHTML(e.message)}</p>`; }
         };
         window.resolveReport = async (reportId) => { if(confirm("Mark resolved?")) { await updateDoc(doc(db, "reports", reportId), { status: "Resolved" }); window.loadAdminTab('reports'); } };
         window.loadAdminTab('identities');
