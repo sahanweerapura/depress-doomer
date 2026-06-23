@@ -40,10 +40,14 @@
 
     <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
         <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon"></i> Doomer</div>
-        <select class="form-control" id="langSwitcherMobile" style="width: auto; padding: 0.5rem; background: transparent;">
-            <option value="en">EN</option>
-            <option value="si">SI</option>
-        </select>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <select class="form-control" id="langSwitcherMobile" style="width: auto; padding: 0.5rem; background: transparent;">
+                <option value="en">EN</option>
+                <option value="si">SI</option>
+            </select>
+            <!-- NEW: Mobile Logout Button Top Right -->
+            <a href="#" id="logoutBtnMobileTop" style="color: var(--danger); font-size: 1.2rem;"><i class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
     </header>
 
     <div class="app-layout">
@@ -72,10 +76,12 @@
         <main class="main-feed">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;" class="desktop-only">
                 <h2 style="font-weight: 800; font-size: 1.8rem;" data-i18n="nav.feed">Home</h2>
-                <select class="form-control" id="langSwitcher" style="width: auto; padding: 0.5rem;">
-                    <option value="en">English</option>
-                    <option value="si">සිංහල</option>
-                </select>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <select class="form-control" id="langSwitcher" style="width: auto; padding: 0.5rem;">
+                        <option value="en">English</option>
+                        <option value="si">සිංහල</option>
+                    </select>
+                </div>
             </div>
 
             <div class="widget glass-panel" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; background: rgba(99, 102, 241, 0.05); border-color: rgba(99, 102, 241, 0.2); padding: 1rem 1.5rem;">
@@ -103,7 +109,7 @@
                                         </span>
                                     </label>
 
-                                    <!-- NEW: Content Warning Checkbox -->
+                                    <!-- Content Warning Checkbox -->
                                     <label style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 0.5rem;">
                                         <input type="checkbox" id="isTriggerWarning" style="accent-color: var(--danger); width: 16px; height: 16px; margin-top: 3px;"> 
                                         <span>
@@ -123,7 +129,7 @@
         </main>
 
         <aside class="sidebar-right">
-            <!-- NEW: Panic Relief Breathing Widget -->
+            <!-- Panic Relief Breathing Widget -->
             <div class="widget glass-panel" style="border-left: 4px solid var(--primary); margin-bottom: 1.5rem;">
                 <h3><i class="fa-solid fa-lungs" style="color: var(--primary);"></i> Panic Relief</h3>
                 <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.5rem 0 1rem 0;">Feeling overwhelmed? Take 60 seconds to sync your breathing.</p>
@@ -154,7 +160,7 @@
         <a href="profile.html" class="mobile-nav-item"><i class="fa-solid fa-user"></i></a>
     </nav>
 
-    <!-- NEW: Breathe / Grounding Modal -->
+    <!-- Breathe / Grounding Modal -->
     <div class="modal-overlay" id="breatheModal">
         <div class="modal-content glass-panel" style="text-align: center; border-left: 4px solid var(--primary);">
             <h2 style="color: white; margin-bottom: 0.5rem;"><i class="fa-solid fa-lungs"></i> Ground Yourself</h2>
@@ -257,7 +263,7 @@
         window.openReportModal = openReportModal;
     </script>
     <script type="module" src="js/i18n.js"></script>
-    <script type="module" src="js/app.js?v=10"></script>
+    <script type="module" src="js/app.js?v=11"></script>
     <script type="module">
         import { auth } from './js/firebase-config.js';
         import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -266,7 +272,9 @@
             localStorage.removeItem('depressDoomerUser');
             window.location.href = "login.html";
         };
+        // Bind to both Desktop AND Mobile Top-Right Logout Buttons
         document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+        document.getElementById('logoutBtnMobileTop')?.addEventListener('click', doLogout);
     </script>
 </body>
 </html>
