@@ -8,7 +8,48 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .terms-box { background: rgba(0,0,0,0.4); border-left: 3px solid var(--accent); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; color: #d1d5db; line-height: 1.6; }
-        .signup-container { width: 100%; max-width: 550px; padding: 2.5rem; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 16px; z-index: 10; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: block; }
+        .signup-container { width: 100%; max-width: 550px; padding: 2.5rem; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,0.7); display: block; }
+        
+        /* FIX: Making the input boxes very clear and distinct */
+        .form-control {
+            background: rgba(0, 0, 0, 0.6) !important; /* Darker solid background */
+            border: 2px solid rgba(99, 102, 241, 0.4) !important; /* Clear visible border */
+            border-radius: 8px !important;
+            color: white !important;
+            padding: 0.8rem !important;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.5) !important;
+            outline: none;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #e7e9ea;
+            margin-bottom: 0.4rem;
+            display: block;
+        }
+
+        /* FIX: Making the submit button pop out */
+        .submit-btn-glow {
+            background: linear-gradient(135deg, #4f46e5, #4338ca) !important;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.6) !important;
+            color: white !important;
+            font-weight: 800 !important;
+            font-size: 1.15rem !important;
+            padding: 1.2rem !important;
+            border: none !important;
+            border-radius: 8px;
+            transition: all 0.3s ease !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .submit-btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.9) !important;
+        }
+
         @media (max-width: 480px) { .signup-container { padding: 1.5rem; } }
     </style>
 </head>
@@ -16,7 +57,6 @@
     <div class="blob blob-primary"></div>
     <div class="blob blob-accent"></div>
 
-    <!-- Replaced auth-wrapper with a custom signup-container to fix the column bug -->
     <div class="signup-container">
         <div style="text-align: center; margin-bottom: 2rem;">
             <i class="fa-solid fa-moon fa-3x" style="color: var(--primary); margin-bottom: 1rem;"></i>
@@ -68,14 +108,14 @@
                 <input type="password" class="form-control" id="password" required minlength="6">
             </div>
 
-            <div class="form-group" style="display: flex; align-items: flex-start; gap: 0.8rem; margin-top: 1.5rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
-                <input type="checkbox" id="agreeTerms" required style="margin-top: 3px; width: 20px; height: 20px; accent-color: var(--primary); cursor: pointer;">
-                <label for="agreeTerms" style="font-size: 0.85rem; color: #e7e9ea; cursor: pointer; line-height: 1.4;">
+            <div class="form-group" style="display: flex; align-items: flex-start; gap: 0.8rem; margin-top: 1.5rem; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <input type="checkbox" id="agreeTerms" required style="margin-top: 3px; width: 22px; height: 22px; accent-color: var(--primary); cursor: pointer;">
+                <label for="agreeTerms" style="font-size: 0.9rem; color: #e7e9ea; cursor: pointer; line-height: 1.5;">
                     I agree to the rules of The Haven. I will not bully or harass others. I understand my account can be permanently deleted by admins if I violate these terms.
                 </label>
             </div>
 
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 1rem; padding: 1rem; font-size: 1.1rem;" data-i18n="auth.signupBtn">Create Anonymous Account</button>
+            <button type="submit" class="submit-btn-glow" style="width: 100%; margin-top: 1.5rem;" data-i18n="auth.signupBtn">Create Anonymous Account</button>
         </form>
         
         <p style="text-align: center; margin-top: 1.5rem; font-size: 0.95rem;">
@@ -84,6 +124,6 @@
     </div>
 
     <script type="module" src="js/i18n.js"></script>
-    <script type="module" src="js/auth.js?v=7"></script>
+    <script type="module" src="js/auth.js?v=8"></script>
 </body>
 </html>
