@@ -8,6 +8,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @media (max-width: 768px) { .desktop-only { display: none !important; } }
+        
+        /* Panic Relief Breathe Animation */
+        .breathe-container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 250px; margin: 1rem 0; }
+        .breathe-circle { width: 80px; height: 80px; background: radial-gradient(circle, var(--primary) 0%, transparent 80%); border-radius: 50%; animation: breatheAnim 8s infinite ease-in-out; box-shadow: 0 0 40px var(--primary); display: flex; align-items: center; justify-content: center; }
+        @keyframes breatheAnim {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(2.5); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+        .breathe-text-anim { margin-top: 3rem; color: white; font-size: 1.2rem; font-weight: bold; animation: textFade 8s infinite ease-in-out; }
+        @keyframes textFade {
+            0% { content: "Breathe In..."; opacity: 0.5; }
+            25% { opacity: 1; }
+            50% { content: "Breathe Out..."; opacity: 0.5; }
+            75% { opacity: 1; }
+            100% { content: "Breathe In..."; opacity: 0.5; }
+        }
+
+        /* Trigger Warning Blur Effects */
+        .blur-wrapper { position: relative; cursor: pointer; border-radius: 8px; overflow: hidden; }
+        .blur-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 10; transition: opacity 0.3s ease; }
+        .content-blur { filter: blur(10px); transition: filter 0.3s ease; user-select: none; }
+        .blur-wrapper.revealed .blur-overlay { opacity: 0; pointer-events: none; }
+        .blur-wrapper.revealed .content-blur { filter: blur(0); user-select: auto; }
     </style>
 </head>
 <body>
@@ -70,13 +94,24 @@
                             <textarea id="postContent" class="compose-textarea" rows="3" placeholder="Share your struggles completely anonymously..." data-i18n-placeholder="feed.sharePrompt" required></textarea>
                             
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 1rem;">
-                                <label style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 0.5rem;">
-                                    <input type="checkbox" id="isVoidPost" style="accent-color: #4b5563; width: 16px; height: 16px; margin-top: 3px;"> 
-                                    <span>
-                                        <span data-i18n="feed.voidText">🕳️ Send to The Void</span> <i class="fa-solid fa-circle-info" style="color: var(--primary); margin-left: 5px;"></i><br>
-                                        <small style="font-size: 0.7rem; color: #6b7280;" data-i18n="feed.voidTooltip">(Disables replies, hides from public after 24h)</small>
-                                    </span>
-                                </label>
+                                <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                                    <label style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <input type="checkbox" id="isVoidPost" style="accent-color: #4b5563; width: 16px; height: 16px; margin-top: 3px;"> 
+                                        <span>
+                                            <span data-i18n="feed.voidText">🕳️ Send to The Void</span> <i class="fa-solid fa-circle-info" style="color: var(--primary); margin-left: 5px;"></i><br>
+                                            <small style="font-size: 0.7rem; color: #6b7280;" data-i18n="feed.voidTooltip">(Disables replies, hides from public after 24h)</small>
+                                        </span>
+                                    </label>
+
+                                    <!-- NEW: Content Warning Checkbox -->
+                                    <label style="color: var(--text-muted); font-size: 0.85rem; cursor: pointer; display: flex; align-items: flex-start; gap: 0.5rem;">
+                                        <input type="checkbox" id="isTriggerWarning" style="accent-color: var(--danger); width: 16px; height: 16px; margin-top: 3px;"> 
+                                        <span>
+                                            <span style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Heavy Content</span><br>
+                                            <small style="font-size: 0.7rem; color: #6b7280;">(Blurs text to protect sensitive readers)</small>
+                                        </span>
+                                    </label>
+                                </div>
                                 <button type="submit" class="btn-primary" data-i18n="feed.postButton">Share Anonymously</button>
                             </div>
                         </form>
@@ -88,6 +123,13 @@
         </main>
 
         <aside class="sidebar-right">
+            <!-- NEW: Panic Relief Breathing Widget -->
+            <div class="widget glass-panel" style="border-left: 4px solid var(--primary); margin-bottom: 1.5rem;">
+                <h3><i class="fa-solid fa-lungs" style="color: var(--primary);"></i> Panic Relief</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0.5rem 0 1rem 0;">Feeling overwhelmed? Take 60 seconds to sync your breathing.</p>
+                <button class="btn-primary" style="width: 100%; background: transparent; border: 1px solid var(--primary);" onclick="document.getElementById('breatheModal').classList.add('active')">Start Grounding</button>
+            </div>
+
             <div class="widget glass-panel" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); margin-bottom: 1.5rem;">
                 <div style="color: var(--success); font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fa-solid fa-shield-check"></i> <span data-i18n="sidebar.privacy">100% Identity Protected</span>
@@ -111,6 +153,23 @@
         <a href="#" class="mobile-nav-item" onclick="openNotifications()"><i class="fa-solid fa-bell"></i></a>
         <a href="profile.html" class="mobile-nav-item"><i class="fa-solid fa-user"></i></a>
     </nav>
+
+    <!-- NEW: Breathe / Grounding Modal -->
+    <div class="modal-overlay" id="breatheModal">
+        <div class="modal-content glass-panel" style="text-align: center; border-left: 4px solid var(--primary);">
+            <h2 style="color: white; margin-bottom: 0.5rem;"><i class="fa-solid fa-lungs"></i> Ground Yourself</h2>
+            <p style="color: var(--text-muted);">Sync your breath with the circle. You are safe here.</p>
+            
+            <div class="breathe-container">
+                <div class="breathe-circle"></div>
+                <div class="breathe-text-anim">Follow the pulse...</div>
+            </div>
+
+            <div style="display: flex; justify-content: center; margin-top: 1rem;">
+                <button type="button" class="btn-primary" style="background: transparent; border: 1px solid var(--glass-border);" onclick="document.getElementById('breatheModal').classList.remove('active')">End Session</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Report Modal -->
     <div class="modal-overlay" id="reportModal">
@@ -198,7 +257,7 @@
         window.openReportModal = openReportModal;
     </script>
     <script type="module" src="js/i18n.js"></script>
-    <script type="module" src="js/app.js?v=6"></script>
+    <script type="module" src="js/app.js?v=10"></script>
     <script type="module">
         import { auth } from './js/firebase-config.js';
         import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
