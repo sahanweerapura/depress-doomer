@@ -8,30 +8,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .terms-box { background: rgba(0,0,0,0.4); border-left: 3px solid var(--accent); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; color: #d1d5db; line-height: 1.6; }
-        .signup-container { width: 100%; max-width: 550px; padding: 2.5rem; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; z-index: 10; box-shadow: 0 10px 40px rgba(0,0,0,0.7); display: block; }
+        .signup-container { width: 100%; max-width: 550px; padding: 2.5rem; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; z-index: 10; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.7); display: block; }
         
-        /* FIX: Making the input boxes very clear and distinct */
         .form-control {
-            background: rgba(0, 0, 0, 0.6) !important; /* Darker solid background */
-            border: 2px solid rgba(99, 102, 241, 0.4) !important; /* Clear visible border */
+            background: rgba(0, 0, 0, 0.6) !important;
+            border: 2px solid rgba(99, 102, 241, 0.4) !important;
             border-radius: 8px !important;
             color: white !important;
             padding: 0.8rem !important;
             transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
         }
         .form-control:focus {
             border-color: var(--primary) !important;
             box-shadow: 0 0 10px rgba(99, 102, 241, 0.5) !important;
             outline: none;
         }
-        .form-group label {
-            font-weight: 600;
-            color: #e7e9ea;
-            margin-bottom: 0.4rem;
-            display: block;
-        }
+        .form-group label { font-weight: 600; color: #e7e9ea; margin-bottom: 0.4rem; display: block; }
 
-        /* FIX: Making the submit button pop out */
         .submit-btn-glow {
             background: linear-gradient(135deg, #4f46e5, #4338ca) !important;
             box-shadow: 0 4px 15px rgba(79, 70, 229, 0.6) !important;
@@ -44,18 +39,36 @@
             transition: all 0.3s ease !important;
             text-transform: uppercase;
             letter-spacing: 1px;
+            cursor: pointer;
         }
-        .submit-btn-glow:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.9) !important;
+        .submit-btn-glow:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79, 70, 229, 0.9) !important; }
+
+        /* The Custom Hand/Heart Animation CSS */
+        @keyframes slideUpHeart {
+            0% { transform: translate(-50%, 100%); opacity: 0; }
+            100% { transform: translate(-50%, 0); opacity: 0.15; }
+        }
+        @keyframes pulseHeart {
+            0% { transform: translate(-50%, 0) scale(1); }
+            50% { transform: translate(-50%, 0) scale(1.05); }
+            100% { transform: translate(-50%, 0) scale(1); }
+        }
+        .bg-animated-icon {
+            position: fixed; bottom: -20px; left: 50%; font-size: 45vw; color: #ef4444; z-index: 1; opacity: 0; pointer-events: none;
+            animation: slideUpHeart 1.5s ease-out forwards, pulseHeart 4s ease-in-out 1.5s infinite;
         }
 
         @media (max-width: 480px) { .signup-container { padding: 1.5rem; } }
+        @media (max-width: 768px) { .bg-animated-icon { font-size: 80vw; bottom: 0px; } }
     </style>
 </head>
 <body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem; margin: 0; position: relative;">
+    <!-- Abstract Blobs -->
     <div class="blob blob-primary"></div>
     <div class="blob blob-accent"></div>
+
+    <!-- The Animated Support Hands in the Background -->
+    <i class="fa-solid fa-hand-holding-heart bg-animated-icon"></i>
 
     <div class="signup-container">
         <div style="text-align: center; margin-bottom: 2rem;">
@@ -123,7 +136,45 @@
         </p>
     </div>
 
+    <!-- Complete Profile Modal for Google Sign In -->
+    <div class="modal-overlay" id="completeProfileModal">
+        <div class="modal-content glass-panel" style="max-width: 500px; padding: 2.5rem; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 40px rgba(0,0,0,0.7);">
+            <h2 style="color: white; margin-bottom: 1rem; font-weight: 800; text-align: center;">Complete Your Profile</h2>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem;">Just a few more details to keep the community safe.</p>
+            <form id="completeProfileForm">
+                <div class="form-group">
+                    <label>Real Full Name</label>
+                    <input type="text" class="form-control" id="cpName" required>
+                </div>
+                <div class="form-group" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 100px;">
+                        <label>Age</label>
+                        <input type="number" class="form-control" id="cpAge" min="13" max="100" required>
+                    </div>
+                    <div style="flex: 1; min-width: 150px;">
+                        <label>Gender</label>
+                        <select class="form-control" id="cpGender" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="tel" class="form-control" id="cpPhone" required>
+                </div>
+                <div class="form-group">
+                    <label>Public Nickname (No Spaces)</label>
+                    <input type="text" class="form-control" id="cpNickname" required>
+                </div>
+                <button type="submit" class="submit-btn-glow" style="width: 100%; margin-top: 1.5rem;">Join The Haven</button>
+            </form>
+        </div>
+    </div>
+
     <script type="module" src="js/i18n.js"></script>
-    <script type="module" src="js/auth.js?v=8"></script>
+    <script type="module" src="js/auth.js?v=9"></script>
 </body>
 </html>
