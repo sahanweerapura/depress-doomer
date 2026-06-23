@@ -32,10 +32,14 @@
 
     <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
         <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon"></i> Doomer</div>
-        <select class="form-control" id="langSwitcherMobile" style="width: auto; padding: 0.5rem; background: transparent;">
-            <option value="en">EN</option>
-            <option value="si">SI</option>
-        </select>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <select class="form-control" id="langSwitcherMobile" style="width: auto; padding: 0.5rem; background: transparent;">
+                <option value="en">EN</option>
+                <option value="si">SI</option>
+            </select>
+            <!-- NEW: Mobile Logout Button Top Right -->
+            <a href="#" id="logoutBtnMobileTop" style="color: var(--danger); font-size: 1.2rem;"><i class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
     </header>
 
     <div class="app-layout">
@@ -131,6 +135,7 @@
         }
         const doLogout = async () => { await signOut(auth); localStorage.removeItem('depressDoomerUser'); window.location.href = "login.html"; };
         document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+        document.getElementById('logoutBtnMobileTop')?.addEventListener('click', doLogout);
     </script>
 </body>
 </html>
