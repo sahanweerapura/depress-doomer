@@ -6,14 +6,14 @@
     <title>Profile - Depress Doomer</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ADDED: Chart.js Library for Mood Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @media (max-width: 768px) { .desktop-only { display: none !important; } }
         .profile-header { text-align: center; padding: 2rem; border-bottom: 1px solid var(--glass-border); margin-bottom: 2rem; background: rgba(0,0,0,0.2); border-radius: 12px;}
         .profile-avatar-large { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 3rem; background: rgba(0,0,0,0.3); overflow: hidden; }
         .profile-avatar-large img { width: 100%; height: 100%; object-fit: cover; }
         .bio-text { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 1rem auto; line-height: 1.6; }
-        .mood-box { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
-        .mood-badge { padding: 0.3rem 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 15px; font-size: 0.85rem; color: white; }
     </style>
 </head>
 <body>
@@ -30,6 +30,7 @@
             <nav class="nav-links">
                 <a href="index.html" class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></a>
                 <a href="chat.html" class="nav-item"><i class="fa-solid fa-message"></i><span>Live Chat</span></a>
+                <a href="about.html" class="nav-item"><i class="fa-solid fa-circle-info"></i><span>About</span></a>
                 <a href="#" class="nav-item" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
             </nav>
             <div class="user-profile-btn" style="cursor:pointer;" onclick="window.location.href='profile.html'">
@@ -64,8 +65,8 @@
     <nav class="mobile-nav">
         <a href="index.html" class="mobile-nav-item"><i class="fa-solid fa-house"></i></a>
         <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
+        <a href="about.html" class="mobile-nav-item"><i class="fa-solid fa-circle-info"></i></a>
         <a href="profile.html" class="mobile-nav-item active"><i class="fa-solid fa-user"></i></a>
-        <a href="#" class="mobile-nav-item" id="logoutBtnMobile"><i class="fa-solid fa-right-from-bracket"></i></a>
     </nav>
 
     <!-- Edit Profile Modal -->
@@ -89,7 +90,7 @@
         </div>
     </div>
 
-    <script type="module" src="js/profile.js"></script>
+    <script type="module" src="js/profile.js?v=11"></script>
     <script type="module">
         import { auth } from './js/firebase-config.js';
         import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
