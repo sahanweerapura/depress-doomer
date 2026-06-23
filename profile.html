@@ -6,7 +6,6 @@
     <title>Profile - Depress Doomer</title>
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- ADDED: Chart.js Library for Mood Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @media (max-width: 768px) { .desktop-only { display: none !important; } }
@@ -22,6 +21,10 @@
 
     <header class="mobile-header glass-panel" style="border-radius: 0; border-top: none; border-left: none; border-right: none;">
         <div class="brand-logo" style="margin: 0; font-size: 1.5rem; cursor: pointer;" onclick="window.location.href='index.html'"><i class="fa-solid fa-moon"></i> Doomer</div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <!-- NEW: Mobile Logout Button Top Right -->
+            <a href="#" id="logoutBtnMobileTop" style="color: var(--danger); font-size: 1.2rem;"><i class="fa-solid fa-right-from-bracket"></i></a>
+        </div>
     </header>
 
     <div class="app-layout">
@@ -61,7 +64,7 @@
         </aside>
     </div>
 
-    <!-- Mobile Nav -->
+    <!-- Mobile Nav (Cleaned up, no squished logout) -->
     <nav class="mobile-nav">
         <a href="index.html" class="mobile-nav-item"><i class="fa-solid fa-house"></i></a>
         <a href="chat.html" class="mobile-nav-item"><i class="fa-solid fa-message"></i></a>
@@ -96,7 +99,7 @@
         import { signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         const doLogout = async () => { await signOut(auth); localStorage.removeItem('depressDoomerUser'); window.location.href = "login.html"; };
         document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
-        document.getElementById('logoutBtnMobile')?.addEventListener('click', doLogout);
+        document.getElementById('logoutBtnMobileTop')?.addEventListener('click', doLogout);
     </script>
 </body>
 </html>
