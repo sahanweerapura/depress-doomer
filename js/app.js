@@ -142,6 +142,21 @@ if (createPostForm && postsContainer) {
             let voidBadge = post.isVoid ? '<span style="color:#6b7280; font-size:0.8rem;">(Into The Void 🕳️)</span>' : '';
             if (post.isExpiredVoid) voidBadge += ' <span style="color:var(--danger); font-size:0.7rem; margin-left: 5px;">[EXPIRED]</span>';
             
+            // Format the content: if it has a trigger warning, wrap it in the blur div!
+            let formattedContent = `<p style="font-size: 1.05rem; line-height: 1.6; ${post.isVoid ? 'color: #9ca3af; font-style: italic;' : ''}">${escapeHTML(post.content)}</p>`;
+            
+            if (post.hasTriggerWarning) {
+                formattedContent = `
+                <div class="blur-wrapper" onclick="this.classList.add('revealed')">
+                    <div class="blur-overlay">
+                        <span style="background: rgba(239, 68, 68, 0.9); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; border: 1px solid #fca5a5;">
+                            <i class="fa-solid fa-eye-slash"></i> Sensitive Content - Click to Reveal
+                        </span>
+                    </div>
+                    <div class="content-blur">${formattedContent}</div>
+                </div>`;
+            }
+
             newPost.innerHTML = `
                 <div class="post-header">
                     <div class="post-author-info">
@@ -152,15 +167,13 @@ if (createPostForm && postsContainer) {
                         </div>
                     </div>
                 </div>
-                <div class="post-content"><p style="font-size: 1.05rem; line-height: 1.6; ${post.isVoid ? 'color: #9ca3af; font-style: italic;' : ''}">${escapeHTML(post.content)}</p></div>
+                
+                <div class="post-content">${formattedContent}</div>
                 
                 <div class="post-actions" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; align-items: center;">
                     <button class="action-btn like ${hasLiked ? 'active' : ''}" onclick="window.toggleLike('${postId}', ${hasLiked})"><i class="${hasLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i> <span id="like-count-${postId}">${likesCount}</span></button>
                     <button class="action-btn report" onclick="window.openReportModal('${postId}', 'post')"><i class="fa-regular fa-flag"></i> Report</button>
-                    
-                    <!-- USER'S OWN POST BUTTONS (RESOLVED + DELETE) -->
                     ${post.authorUid === user.uid ? `<button class="action-btn" onclick="window.resolvePost('${postId}')" style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> Resolved (Remove)</button>` : ''}
-                    
                     ${post.authorUid === user.uid || isAdmin ? `<button class="action-btn" onclick="window.deletePost('${postId}')" style="color: var(--danger); margin-left: auto;"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
                 </div>
 
@@ -188,16 +201,18 @@ if (createPostForm && postsContainer) {
         const submitBtn = createPostForm.querySelector('button[type="submit"]'); submitBtn.disabled = true;
         const content = document.getElementById('postContent').value;
         const isVoid = document.getElementById('isVoidPost') ? document.getElementById('isVoidPost').checked : false;
+        const isTriggerWarning = document.getElementById('isTriggerWarning') ? document.getElementById('isTriggerWarning').checked : false;
         let initialReplies = []; if (checkForCrisis(content)) initialReplies.push(crisisBotReply);
         
         try {
             await addDoc(collection(db, "posts"), {
                 content: content, authorUid: user.uid, authorNickname: user.nickname, 
                 authorAvatar: user.avatar, authorAvatarBase64: user.avatarBase64 || null,
-                likes: 0, likedBy: [], replies: initialReplies, isVoid: isVoid, createdAt: serverTimestamp()
+                likes: 0, likedBy: [], replies: initialReplies, isVoid: isVoid, hasTriggerWarning: isTriggerWarning, createdAt: serverTimestamp()
             });
             document.getElementById('postContent').value = '';
             if (document.getElementById('isVoidPost')) document.getElementById('isVoidPost').checked = false;
+            if (document.getElementById('isTriggerWarning')) document.getElementById('isTriggerWarning').checked = false;
         } catch (error) {} finally { submitBtn.disabled = false; }
     });
 
@@ -282,7 +297,6 @@ if (reportForm) {
     });
 }
 
-// SUPER ADMIN DELETE FUNCTION IS HERE
 const adminData = document.getElementById('adminData');
 if (adminData) {
     if (!user || !user.adminRoles) adminData.innerHTML = "<p>Unauthorized.</p>";
